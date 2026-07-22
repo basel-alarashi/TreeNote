@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="TreeNote.Api/TreeNote.Api.csproj" />
+  <Project Path="TreeNote.Application/TreeNote.Application.csproj" />
+  <Project Path="TreeNote.Domain/TreeNote.Domain.csproj" />
+  <Project Path="TreeNote.Infrastructure/TreeNote.Infrastructure.csproj" />
+</Solution>
