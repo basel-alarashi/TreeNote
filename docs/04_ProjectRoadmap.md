@@ -1,282 +1,246 @@
 # Project Roadmap
 
-Project Name: TreeNote (Working Title)
+## Project Information
 
-Technology Stack
-----------------
-Backend:
-- ASP.NET Core 8 Web API
+| Property | Value |
+|----------|-------|
+| Methodology | Scrum |
+| Sprint Duration | 8 - 32 Working hours |
+| Total Sprints | 7 (Sprint 0–6) |
+| Target Version | 1.0 |
+
+---
+
+# Sprint Overview
+
+| Sprint | Goal | Story Points |
+|---------|------|:------------:|
+| Sprint 0 | Project Planning & Initial Setup | 8 |
+| Sprint 1 | Infrastructure & Application Foundation | 13 |
+| Sprint 2 | Core Domain (Workspace, Canvas, Topics & Relationships) | 21 |
+| Sprint 3 | Visual Canvas Editor | 34 |
+| Sprint 4 | Authentication & User Management | 21 |
+| Sprint 5 | Search, Export & Offline Support | 21 |
+| Sprint 6 | Performance, Deployment & Final Polish | 18 |
+
+**Estimated Total:** **136 Story Points**
+
+---
+
+# Sprint 0 — Project Planning & Initial Setup
+
+## Goal
+
+Prepare the project for development.
+
+## Deliverables
+
+- Repository initialization
+- Solution structure
+- Angular workspace
+- Documentation
+- Git workflow
+- Development environment
+
+---
+
+# Sprint 1 — Infrastructure & Application Foundation
+
+## Goal
+
+Build the technical foundation shared by all future features.
+
+## Deliverables
+
+### Backend
+
+- Clean Architecture configuration
+- Dependency Injection
 - Entity Framework Core
-- SQL Server
-- JWT Authentication
-- Google OAuth
+- SQL Server configuration
+- ASP.NET Core Identity setup
+- Initial DbContext
+- Initial migration
+- Health Check endpoint
+- Logging
+- Configuration
 
-Frontend:
-- Angular 21
-- TypeScript
+### Frontend
+
 - Angular Material
-- Angular Signals
-- RxJS
 - Angular CDK
+- Routing
+- Application Shell
+- Global Theme
 
-Architecture
-------------
-- Layered Architecture
-- REST API
-- Repository + Service Pattern
-- Entity Framework Core
-- SQL Server
+---
 
-==========================================================
-SPRINT 0
-==========================================================
+# Sprint 2 — Core Domain
 
-Goal
-----
-Prepare the project architecture before writing code.
+## Goal
 
-Deliverables
-------------
-- Project vision
-- Functional requirements
-- Non-functional requirements
-- User stories
-- Database design
-- API specification
-- Architecture
-- Naming conventions (Glossary)
-- Product Backlog
+Implement the application's business model without authentication concerns.
 
-Tasks
------
-- [  ] Define project scope
-- [  ] Identify actors
-- [  ] Define use cases
-- [  ] Design database
-- [  ] Design REST API
-- [  ] Define architecture
-- [  ] Prepare Git repository
-- [  ] Create solution structure
-- [  ] Create Angular workspace
-- [  ] Configure Swagger
+## Deliverables
 
-Acceptance Criteria
--------------------
-- Everyone understands project goals
-- Architecture approved
-- Database approved
-- API approved
+### Backend
 
-==========================================================
-SPRINT 1
-==========================================================
+- Workspace entity
+- Canvas entity
+- Topic entity
+- Relationship entity
+- Entity configurations
+- Business rules
+- CRUD APIs
+- Database migrations
 
-Goal
-----
-Authentication and Workspace Management.
+### Frontend
 
-Features
---------
-- Register
-- Login
-- JWT
+- Workspace management
+- Canvas management
+- Topic management (basic)
+- Mock authentication (temporary)
+
+---
+
+# Sprint 3 — Visual Canvas Editor
+
+## Goal
+
+Create an interactive editing experience similar to XMind.
+
+## Deliverables
+
+- Infinite canvas
+- Topic rendering
+- Drag & Drop
+- Zoom
+- Pan
+- Expand / Collapse
+- Context menu
+- Auto layout
+- Keyboard shortcuts
+- Undo / Redo (basic)
+
+---
+
+# Sprint 4 — Authentication & User Management
+
+## Goal
+
+Secure the application and associate data with authenticated users.
+
+## Deliverables
+
+### Backend
+
+- JWT Authentication
+- Refresh Tokens
 - Google OAuth
-- Refresh Token
-- Workspace CRUD
+- Authorization
 - User Profile
 
-Tasks
------
-- [  ] ASP.NET Identity
-- [  ] JWT Authentication
-- [  ] Google OAuth
-- [  ] Refresh Tokens
-- [  ] Angular Authentication
-- [  ] Route Guards
-- [  ] Workspace CRUD API
-- [  ] Workspace UI
-- [  ] User Profile
+### Frontend
 
-Acceptance Criteria
--------------------
-User can:
-- Register
 - Login
-- Logout
-- Create Workspace
-- Rename Workspace
-- Delete Workspace
+- Register
+- Google Sign-In
+- Route Guards
+- HTTP Interceptor
+- Profile page
 
-==========================================================
-SPRINT 2
-==========================================================
+---
 
-Goal
-----
-Tree Management.
+# Sprint 5 — Search, Export & Offline Support
 
-Features
---------
-- Root Topics
-- Child Topics
-- Edit Topic
-- Delete Topic
-- Expand/Collapse
+## Goal
 
-Tasks
------
-- [  ] Topic entity
-- [  ] Relationship entity
-- [  ] CRUD API
-- [  ] Recursive loading
-- [  ] Lazy loading
-- [  ] Validation
-- [  ] Angular Tree Service
-- [  ] Topic Components
+Improve usability and allow users to work anywhere.
 
-Acceptance Criteria
--------------------
-User can create and manage complete trees.
+## Deliverables
 
-==========================================================
-SPRINT 3
-==========================================================
+- Topic search
+- Search navigation
+- Export to PDF
+- Export to PNG
+- Offline mode
+- Synchronization
+- Local caching
+- Error handling improvements
 
-Goal
-----
-Visual Mind Map Editor.
+---
 
-Features
---------
-- XMind-like canvas
-- Drag & Drop
-- Pan
-- Zoom
-- Auto layout
+# Sprint 6 — Performance, Deployment & Final Polish
 
-Tasks
------
-- [  ] Canvas
-- [  ] Drag topics
-- [  ] Move subtrees
-- [  ] Zoom
-- [  ] Pan
-- [  ] Auto arrange
-- [  ] Keyboard shortcuts
-- [  ] Context menu
+## Goal
 
-Acceptance Criteria
--------------------
-User can visually edit trees naturally.
+Prepare the application for production and portfolio presentation.
 
-==========================================================
-SPRINT 4
-==========================================================
+## Deliverables
 
-Goal
-----
-Improve User Experience.
+### Backend
 
-Features
---------
-- Search
-- Responsive UI
-- Offline support
-- Emoji picker
-- Settings
-
-Tasks
------
-- [  ] Search
-- [  ] Responsive layouts
-- [  ] IndexedDB storage
-- [  ] Service Worker
-- [  ] Sync mechanism
-- [  ] Emoji picker
-- [  ] Preferences
-
-Acceptance Criteria
--------------------
-Application works smoothly on desktop and mobile.
-
-==========================================================
-SPRINT 5
-==========================================================
-
-Goal
-----
-Export and Performance.
-
-Features
---------
-- Export PDF
-- Export PNG
 - Performance optimization
+- Query optimization
+- Logging improvements
+- Final API cleanup
 
-Tasks
------
-- [  ] PDF export
-- [  ] PNG export
-- [  ] Optimize SQL
-- [  ] Optimize Angular rendering
-- [  ] Caching
-- [  ] Loading indicators
+### Frontend
 
-Acceptance Criteria
--------------------
-Large trees remain responsive.
-Exported files match the visual map.
+- Performance optimization
+- Responsive improvements
+- Accessibility improvements
+- UI polishing
 
-==========================================================
-SPRINT 6
-==========================================================
+### DevOps
 
-Goal
-----
-Production Readiness.
+- Docker support
+- Production configuration
+- CI/CD preparation
 
-Features
---------
-- Deployment
-- CI/CD
-- Documentation
-- Portfolio
+### Documentation
 
-Tasks
------
-- [  ] Docker
-- [  ] Environment configuration
-- [  ] Logging
-- [  ] Global exception handling
-- [  ] README
-- [  ] Screenshots
-- [  ] Demo video
-- [  ] Deployment
-- [  ] Portfolio write-up
+- Final README
+- API documentation
+- Architecture updates
+- Release notes
 
-Acceptance Criteria
--------------------
-Application is production-ready and publicly accessible.
+---
 
-==========================================================
-FUTURE FEATURES
-==========================================================
+# Version 1.0 Completion Criteria
 
-Version 2
-----------
-- Collaboration
-- SignalR
-- Shared Workspaces
-- Comments
-- Version History
+TreeNote 1.0 is considered complete when the following features are available:
+
+- User registration & login
+- Google OAuth
+- Workspace management
+- Canvas management
+- Topic management
+- Multi-parent relationships (optional)
+- Interactive visual editor
+- Search
+- Export (PDF & PNG)
+- Offline support
+- Responsive design
+- Production-ready deployment
+
+---
+
+# Version 2.0 (Future)
+
+The following features are intentionally postponed:
+
+- Real-time collaboration
+- Shared workspaces
+- Roles & permissions
+- Rich text editing
 - Markdown
-- Images
 - Attachments
-- Tags
+- Images
 - Templates
-- AI-generated maps
-- Import/Export JSON
+- Version history
+- AI-assisted map generation
+- AI topic suggestions
 - Public sharing
-- Dark Mode
-- Themes
-- Multi-language
+- Mobile application
+- Desktop application
