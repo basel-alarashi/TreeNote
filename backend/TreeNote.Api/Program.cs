@@ -26,6 +26,8 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    using var scope = app.Services.CreateScope();
+    await TreeNote.Infrastructure.Persistence.DbSeeder.SeedMockUserAsync(scope.ServiceProvider);
 }
 
 app.UseHttpsRedirection();
