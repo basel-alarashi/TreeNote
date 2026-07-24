@@ -4,11 +4,12 @@ using Microsoft.EntityFrameworkCore;
 using TreeNote.Infrastructure.Identity;
 using TreeNote.Domain.Entities;
 using TreeNote.Infrastructure.Configurations;
+using TreeNote.Application.Common.Interfaces;
 
 namespace TreeNote.Infrastructure.Persistence;
 
 public class ApplicationDbContext
-    : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
+    : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>, IApplicationDbContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
