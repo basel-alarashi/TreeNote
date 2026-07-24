@@ -47,11 +47,11 @@ public class TopicService : ITopicService
             Y = command.Y,
             Emoji = command.Emoji,
         };
-        _context.Add(topic);
+        _context.Topics.Add(topic);
 
         if (command.ParentId is { } parentId)
         {
-            var parent = await _context.FirstOrDefaultAsync(t => t.Id == parentId);
+            var parent = await _context.Topics.FirstOrDefaultAsync(t => t.Id == parentId);
             if (parent is null) throw new NotFoundException($"Parent topic '{parentId}' was not found.");
             if (parent.CanvasId != command.CanvasId)
                 throw new BusinessRuleException("Parent topic must belong to the same canvas.");
@@ -78,7 +78,7 @@ public class TopicService : ITopicService
     {
         var topic = await GetOwnedTopicAsync(id);
         await _relationshipCleanup.RemoveRelationshipsForTopicsAsync(new[] { id });
-        _context.Remove(topic);
+        _context.Topics.Remove(topic);
         await _context.SaveChangesAsync();
     }
 
@@ -98,14 +98,14 @@ public class TopicService : ITopicService
             Emoji = source.Emoji,
         };
 
-        _context.Add(copy);
+        _context.Topics.Add(copy);
         await _context.SaveChangesAsync();
         return ToDto(copy);
     }
 
     private async Task<Topic> GetOwnedTopicAsync(Guid id)
     {
-        var topic = await _context
+        var topic = await _context.Topics
             .Include(t => t.Canvas)
             .ThenInclude(c => c.Workspace)
             .FirstOrDefaultAsync(t => t.Id == id);

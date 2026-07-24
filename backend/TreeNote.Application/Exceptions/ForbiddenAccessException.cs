@@ -1,4 +1,4 @@
-﻿namespace TreeNote.Application.Common.Exceptions;
+﻿namespace TreeNote.Application.Exceptions;
 
 public class ForbiddenAccessException : Exception
 {

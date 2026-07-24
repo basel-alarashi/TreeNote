@@ -25,7 +25,7 @@ public class WorkspaceService : IWorkspaceService
 
     public async Task<List<WorkspaceDto>> GetAllForCurrentUserAsync()
     {
-        return await _context
+        return await _context.Workspaces
             .Where(w => w.UserId == _currentUser.UserId)
             .OrderBy(w => w.CreatedAt)
             .Select(w => new WorkspaceDto(w.Id, w.Name, w.CreatedAt))
@@ -47,7 +47,7 @@ public class WorkspaceService : IWorkspaceService
             Name = command.Name,
         };
 
-        _context.Add(workspace);
+        _context.Workspaces.Add(workspace);
         await _context.SaveChangesAsync();
 
         return new WorkspaceDto(workspace.Id, workspace.Name, workspace.CreatedAt);
@@ -72,13 +72,13 @@ public class WorkspaceService : IWorkspaceService
 
         await _relationshipCleanup.RemoveRelationshipsForTopicsAsync(topicIds);
 
-        _context.Remove(workspace); // cascades to Canvases -> Topics
+        _context.Workspaces.Remove(workspace); // cascades to Canvases -> Topics
         await _context.SaveChangesAsync();
     }
 
     private async Task<Workspace> GetOwnedWorkspaceAsync(Guid id)
     {
-        var workspace = await _context.FirstOrDefaultAsync(w => w.Id == id);
+        var workspace = await _context.Workspaces.FirstOrDefaultAsync(w => w.Id == id);
         if (workspace is null) throw new NotFoundException($"Workspace '{id}' was not found.");
         if (workspace.UserId != _currentUser.UserId) throw new ForbiddenAccessException();
         return workspace;

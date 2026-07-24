@@ -1,4 +1,4 @@
-﻿using TreeNote.Application.Common.Interfaces;
+﻿using TreeNote.Application.Interfaces;
 
 namespace TreeNote.Infrastructure.Identity;
 

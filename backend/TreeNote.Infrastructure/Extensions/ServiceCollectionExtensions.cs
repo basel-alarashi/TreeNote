@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TreeNote.Infrastructure.Identity;
 using TreeNote.Infrastructure.Persistence;
-using TreeNote.Application.Common.Interfaces;
+using TreeNote.Application.Interfaces;
 
 namespace TreeNote.Infrastructure.Extensions;
 

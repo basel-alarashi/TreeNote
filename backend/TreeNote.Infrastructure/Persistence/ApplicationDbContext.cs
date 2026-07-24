@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using TreeNote.Infrastructure.Identity;
 using TreeNote.Domain.Entities;
 using TreeNote.Infrastructure.Configurations;
-using TreeNote.Application.Common.Interfaces;
+using TreeNote.Application.Interfaces;
 
 namespace TreeNote.Infrastructure.Persistence;
 

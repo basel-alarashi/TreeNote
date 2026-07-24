@@ -27,7 +27,7 @@ public class CanvasService : ICanvasService
     {
         await EnsureWorkspaceOwnedAsync(workspaceId);
 
-        return await _context
+        return await _context.Canvases
             .Where(c => c.WorkspaceId == workspaceId)
             .OrderBy(c => c.CreatedAt)
             .Select(c => new CanvasDto(c.Id, c.WorkspaceId, c.Name, c.CreatedAt))
@@ -62,7 +62,7 @@ public class CanvasService : ICanvasService
             Name = command.Name,
         };
 
-        _context.Add(canvas);
+        _context.Canvases.Add(canvas);
         await _context.SaveChangesAsync();
 
         return new CanvasDto(canvas.Id, canvas.WorkspaceId, canvas.Name, canvas.CreatedAt);
@@ -87,7 +87,7 @@ public class CanvasService : ICanvasService
 
         await _relationshipCleanup.RemoveRelationshipsForTopicsAsync(topicIds);
 
-        _context.Remove(canvas); // cascades to Topics
+        _context.Canvases.Remove(canvas); // cascades to Topics
         await _context.SaveChangesAsync();
     }
 
@@ -100,7 +100,7 @@ public class CanvasService : ICanvasService
 
     private async Task<Canvas> GetOwnedCanvasAsync(Guid id)
     {
-        var canvas = await _context
+        var canvas = await _context.Canvases
             .Include(c => c.Workspace)
             .FirstOrDefaultAsync(c => c.Id == id);
 

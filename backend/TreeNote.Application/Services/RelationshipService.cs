@@ -29,7 +29,7 @@ public class RelationshipService : IRelationshipService
         if (parent.CanvasId != child.CanvasId)
             throw new BusinessRuleException("Relationships must connect topics within the same canvas.");
 
-        var exists = await _context
+        var exists = await _context.Relationships
             .AnyAsync(r => r.ParentId == command.ParentId && r.ChildId == command.ChildId);
         if (exists)
             throw new ConflictException("This relationship already exists.");
@@ -38,7 +38,7 @@ public class RelationshipService : IRelationshipService
             throw new BusinessRuleException("This relationship would create a cycle.");
 
         var relationship = new Relationship { ParentId = command.ParentId, ChildId = command.ChildId };
-        _context.Add(relationship);
+        _context.Relationships.Add(relationship);
         await _context.SaveChangesAsync();
 
         return new RelationshipDto(relationship.ParentId, relationship.ChildId);
@@ -50,13 +50,13 @@ public class RelationshipService : IRelationshipService
         // already guaranteed to be in the same (owned) canvas by CreateAsync's rules.
         await GetOwnedTopicAsync(command.ParentId);
 
-        var relationship = await _context
+        var relationship = await _context.Relationships
             .FirstOrDefaultAsync(r => r.ParentId == command.ParentId && r.ChildId == command.ChildId);
 
         if (relationship is null)
             throw new NotFoundException("Relationship was not found.");
 
-        _context.Remove(relationship);
+        _context.Relationships.Remove(relationship);
         await _context.SaveChangesAsync();
     }
 
@@ -64,7 +64,7 @@ public class RelationshipService : IRelationshipService
     // FROM Child via existing edges (that path + the new edge closes a loop).
     private async Task<bool> WouldCreateCycleAsync(Guid canvasId, Guid parentId, Guid childId)
     {
-        var edges = await _context
+        var edges = await _context.Relationships
             .Where(r => r.Parent.CanvasId == canvasId)
             .Select(r => new { r.ParentId, r.ChildId })
             .ToListAsync();

@@ -1,8 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using TreeNote.Application.Services;
 using TreeNote.Application.Interfaces;
-using TreeNote.Application.Interfaces;
-using TreeNote.Application.Services;
 
 namespace TreeNote.Application.Extensions;
 
