@@ -1,4 +1,4 @@
-﻿using TreeNote.Application.Common.Exceptions;
+﻿using TreeNote.Application.Exceptions;
 
 namespace TreeNote.Api.Middlewares;
 
