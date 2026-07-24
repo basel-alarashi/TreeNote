@@ -1,4 +1,4 @@
-﻿namespace TreeNote.Application.Common.Interfaces;
+﻿namespace TreeNote.Application.Interfaces;
 
 public interface IRelationshipCleanupService
 {

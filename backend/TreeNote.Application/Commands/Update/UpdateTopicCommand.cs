@@ -1,4 +1,4 @@
-﻿namespace TreeNote.Application.Topics.Commands;
+﻿namespace TreeNote.Application.Commands;
 
 // Covers rename and position changes ("move" in the backlog sense of dragging a
 // node). Re-parenting a topic in the tree is done via the Relationship endpoints,

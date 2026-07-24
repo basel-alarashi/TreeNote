@@ -1,7 +1,7 @@
-﻿using TreeNote.Application.Topics.Commands;
-using TreeNote.Application.Topics.DTOs;
+﻿using TreeNote.Application.Commands;
+using TreeNote.Application.DTOs;
 
-namespace TreeNote.Application.Topics.Interfaces;
+namespace TreeNote.Application.Interfaces;
 
 public interface ITopicService
 {

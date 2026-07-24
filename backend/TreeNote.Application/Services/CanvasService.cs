@@ -1,14 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TreeNote.Application.Canvases.Commands;
-using TreeNote.Application.Canvases.DTOs;
-using TreeNote.Application.Canvases.Interfaces;
-using TreeNote.Application.Common.Exceptions;
-using TreeNote.Application.Common.Interfaces;
-using TreeNote.Application.Relationships.DTOs;
-using TreeNote.Application.Topics.DTOs;
+using TreeNote.Application.Commands;
+using TreeNote.Application.DTOs;
+using TreeNote.Application.Interfaces;
+using TreeNote.Application.Exceptions;
 using TreeNote.Domain.Entities;
 
-namespace TreeNote.Application.Canvases.Services;
+namespace TreeNote.Application.Services;
 
 public class CanvasService : ICanvasService
 {
@@ -30,7 +27,7 @@ public class CanvasService : ICanvasService
     {
         await EnsureWorkspaceOwnedAsync(workspaceId);
 
-        return await _context.Canvases
+        return await _context
             .Where(c => c.WorkspaceId == workspaceId)
             .OrderBy(c => c.CreatedAt)
             .Select(c => new CanvasDto(c.Id, c.WorkspaceId, c.Name, c.CreatedAt))
@@ -65,7 +62,7 @@ public class CanvasService : ICanvasService
             Name = command.Name,
         };
 
-        _context.Canvases.Add(canvas);
+        _context.Add(canvas);
         await _context.SaveChangesAsync();
 
         return new CanvasDto(canvas.Id, canvas.WorkspaceId, canvas.Name, canvas.CreatedAt);
@@ -90,7 +87,7 @@ public class CanvasService : ICanvasService
 
         await _relationshipCleanup.RemoveRelationshipsForTopicsAsync(topicIds);
 
-        _context.Canvases.Remove(canvas); // cascades to Topics
+        _context.Remove(canvas); // cascades to Topics
         await _context.SaveChangesAsync();
     }
 
@@ -103,7 +100,7 @@ public class CanvasService : ICanvasService
 
     private async Task<Canvas> GetOwnedCanvasAsync(Guid id)
     {
-        var canvas = await _context.Canvases
+        var canvas = await _context
             .Include(c => c.Workspace)
             .FirstOrDefaultAsync(c => c.Id == id);
 

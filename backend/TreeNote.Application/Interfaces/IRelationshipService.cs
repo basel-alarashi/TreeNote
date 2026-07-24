@@ -1,7 +1,7 @@
-﻿using TreeNote.Application.Relationships.Commands;
-using TreeNote.Application.Relationships.DTOs;
+﻿using TreeNote.Application.Commands;
+using TreeNote.Application.DTOs;
 
-namespace TreeNote.Application.Relationships.Interfaces;
+namespace TreeNote.Application.Interfaces;
 
 public interface IRelationshipService
 {

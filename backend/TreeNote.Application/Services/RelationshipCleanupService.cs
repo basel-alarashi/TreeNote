@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TreeNote.Application.Common.Interfaces;
+using TreeNote.Application.Interfaces;
 
-namespace TreeNote.Application.Common.Services;
+namespace TreeNote.Application.Services;
 
 public class RelationshipCleanupService : IRelationshipCleanupService
 {

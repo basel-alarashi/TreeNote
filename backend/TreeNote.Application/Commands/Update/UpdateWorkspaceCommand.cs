@@ -1,3 +1,3 @@
-﻿namespace TreeNote.Application.Workspaces.Commands;
+﻿namespace TreeNote.Application.Commands;
 
 public record UpdateWorkspaceCommand(string Name);

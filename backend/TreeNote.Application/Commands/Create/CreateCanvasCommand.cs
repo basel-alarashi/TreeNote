@@ -1,3 +1,3 @@
-﻿namespace TreeNote.Application.Canvases.Commands;
+﻿namespace TreeNote.Application.Commands;
 
 public record CreateCanvasCommand(Guid WorkspaceId, string Name);

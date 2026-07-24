@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TreeNote.Domain.Entities;
 
-namespace TreeNote.Application.Common.Interfaces;
+namespace TreeNote.Application.Interfaces;
 
 public interface IApplicationDbContext
 {

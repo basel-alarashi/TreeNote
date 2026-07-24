@@ -21,6 +21,7 @@ builder.Services.AddInfrastructure(builder.Configuration);
 var app = builder.Build();
 
 app.UseSerilogRequestLogging();
+app.UseMiddleware<TreeNote.Api.Middlewares.ExceptionHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {

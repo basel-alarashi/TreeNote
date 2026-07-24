@@ -1,7 +1,7 @@
-﻿using TreeNote.Application.Canvases.Commands;
-using TreeNote.Application.Canvases.DTOs;
+﻿using TreeNote.Application.Commands;
+using TreeNote.Application.DTOs;
 
-namespace TreeNote.Application.Canvases.Interfaces;
+namespace TreeNote.Application.Interfaces;
 
 public interface ICanvasService
 {

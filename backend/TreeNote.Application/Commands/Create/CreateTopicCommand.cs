@@ -1,4 +1,4 @@
-﻿namespace TreeNote.Application.Topics.Commands;
+﻿namespace TreeNote.Application.Commands;
 
 // ParentId is optional: null creates a root topic, a value creates a child
 // (and an initial Relationship is created automatically).

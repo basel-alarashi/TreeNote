@@ -1,7 +1,7 @@
-﻿using TreeNote.Application.Workspaces.Commands;
-using TreeNote.Application.Workspaces.DTOs;
+﻿using TreeNote.Application.Commands;
+using TreeNote.Application.DTOs;
 
-namespace TreeNote.Application.Workspaces.Interfaces;
+namespace TreeNote.Application.Interfaces;
 
 public interface IWorkspaceService
 {

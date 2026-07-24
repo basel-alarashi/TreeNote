@@ -1,3 +1,3 @@
-﻿namespace TreeNote.Application.Relationships.Commands;
+﻿namespace TreeNote.Application.Commands;
 
 public record DeleteRelationshipCommand(Guid ParentId, Guid ChildId);

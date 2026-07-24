@@ -1,12 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TreeNote.Application.Common.Exceptions;
-using TreeNote.Application.Common.Interfaces;
-using TreeNote.Application.Relationships.Commands;
-using TreeNote.Application.Relationships.DTOs;
-using TreeNote.Application.Relationships.Interfaces;
+using TreeNote.Application.Exceptions;
+using TreeNote.Application.Commands;
+using TreeNote.Application.DTOs;
+using TreeNote.Application.Interfaces;
 using TreeNote.Domain.Entities;
 
-namespace TreeNote.Application.Relationships.Services;
+namespace TreeNote.Application.Services;
 
 public class RelationshipService : IRelationshipService
 {
@@ -30,7 +29,7 @@ public class RelationshipService : IRelationshipService
         if (parent.CanvasId != child.CanvasId)
             throw new BusinessRuleException("Relationships must connect topics within the same canvas.");
 
-        var exists = await _context.Relationships
+        var exists = await _context
             .AnyAsync(r => r.ParentId == command.ParentId && r.ChildId == command.ChildId);
         if (exists)
             throw new ConflictException("This relationship already exists.");
@@ -39,7 +38,7 @@ public class RelationshipService : IRelationshipService
             throw new BusinessRuleException("This relationship would create a cycle.");
 
         var relationship = new Relationship { ParentId = command.ParentId, ChildId = command.ChildId };
-        _context.Relationships.Add(relationship);
+        _context.Add(relationship);
         await _context.SaveChangesAsync();
 
         return new RelationshipDto(relationship.ParentId, relationship.ChildId);
@@ -51,13 +50,13 @@ public class RelationshipService : IRelationshipService
         // already guaranteed to be in the same (owned) canvas by CreateAsync's rules.
         await GetOwnedTopicAsync(command.ParentId);
 
-        var relationship = await _context.Relationships
+        var relationship = await _context
             .FirstOrDefaultAsync(r => r.ParentId == command.ParentId && r.ChildId == command.ChildId);
 
         if (relationship is null)
             throw new NotFoundException("Relationship was not found.");
 
-        _context.Relationships.Remove(relationship);
+        _context.Remove(relationship);
         await _context.SaveChangesAsync();
     }
 
@@ -65,7 +64,7 @@ public class RelationshipService : IRelationshipService
     // FROM Child via existing edges (that path + the new edge closes a loop).
     private async Task<bool> WouldCreateCycleAsync(Guid canvasId, Guid parentId, Guid childId)
     {
-        var edges = await _context.Relationships
+        var edges = await _context
             .Where(r => r.Parent.CanvasId == canvasId)
             .Select(r => new { r.ParentId, r.ChildId })
             .ToListAsync();
