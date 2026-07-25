@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using TreeNote.Application.Services;
+using TreeNote.Application.Interfaces;
 
 namespace TreeNote.Application.Extensions;
 
@@ -6,8 +8,11 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        // AutoMapper / FluentValidation / application services registered here
-        // starting Sprint 2.
+        services.AddScoped<IRelationshipCleanupService, RelationshipCleanupService>();
+        services.AddScoped<IWorkspaceService, WorkspaceService>();
+        services.AddScoped<ICanvasService, CanvasService>();
+        services.AddScoped<ITopicService, TopicService>();
+        services.AddScoped<IRelationshipService, RelationshipService>();
         return services;
     }
 }

@@ -153,6 +153,105 @@ namespace TreeNote.Infrastructure.Persistence.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("TreeNote.Domain.Entities.Canvas", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("WorkspaceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkspaceId");
+
+                    b.ToTable("Canvases", (string)null);
+                });
+
+            modelBuilder.Entity("TreeNote.Domain.Entities.Relationship", b =>
+                {
+                    b.Property<Guid>("ParentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ChildId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("ParentId", "ChildId");
+
+                    b.HasIndex("ChildId");
+
+                    b.HasIndex("ParentId");
+
+                    b.ToTable("Relationships", (string)null);
+                });
+
+            modelBuilder.Entity("TreeNote.Domain.Entities.Topic", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CanvasId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Emoji")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<double>("X")
+                        .HasColumnType("float");
+
+                    b.Property<double>("Y")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CanvasId");
+
+                    b.ToTable("Topics", (string)null);
+                });
+
+            modelBuilder.Entity("TreeNote.Domain.Entities.Workspace", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Workspaces", (string)null);
+                });
+
             modelBuilder.Entity("TreeNote.Infrastructure.Identity.ApplicationUser", b =>
                 {
                     b.Property<Guid>("Id")
@@ -271,6 +370,73 @@ namespace TreeNote.Infrastructure.Persistence.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("TreeNote.Domain.Entities.Canvas", b =>
+                {
+                    b.HasOne("TreeNote.Domain.Entities.Workspace", "Workspace")
+                        .WithMany("Canvases")
+                        .HasForeignKey("WorkspaceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Workspace");
+                });
+
+            modelBuilder.Entity("TreeNote.Domain.Entities.Relationship", b =>
+                {
+                    b.HasOne("TreeNote.Domain.Entities.Topic", "Child")
+                        .WithMany("IncomingRelationships")
+                        .HasForeignKey("ChildId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TreeNote.Domain.Entities.Topic", "Parent")
+                        .WithMany("OutgoingRelationships")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Child");
+
+                    b.Navigation("Parent");
+                });
+
+            modelBuilder.Entity("TreeNote.Domain.Entities.Topic", b =>
+                {
+                    b.HasOne("TreeNote.Domain.Entities.Canvas", "Canvas")
+                        .WithMany("Topics")
+                        .HasForeignKey("CanvasId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Canvas");
+                });
+
+            modelBuilder.Entity("TreeNote.Domain.Entities.Workspace", b =>
+                {
+                    b.HasOne("TreeNote.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TreeNote.Domain.Entities.Canvas", b =>
+                {
+                    b.Navigation("Topics");
+                });
+
+            modelBuilder.Entity("TreeNote.Domain.Entities.Topic", b =>
+                {
+                    b.Navigation("IncomingRelationships");
+
+                    b.Navigation("OutgoingRelationships");
+                });
+
+            modelBuilder.Entity("TreeNote.Domain.Entities.Workspace", b =>
+                {
+                    b.Navigation("Canvases");
                 });
 #pragma warning restore 612, 618
         }

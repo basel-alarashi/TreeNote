@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TreeNote.Infrastructure.Identity;
 using TreeNote.Infrastructure.Persistence;
+using TreeNote.Application.Interfaces;
 
 namespace TreeNote.Infrastructure.Extensions;
 
@@ -26,9 +27,10 @@ public static class ServiceCollectionExtensions
             .AddRoles<IdentityRole<Guid>>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
-
         services.AddHealthChecks()
             .AddDbContextCheck<ApplicationDbContext>();
+        services.AddScoped<ICurrentUserService, MockCurrentUserService>();
+        services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
 
         return services;
     }

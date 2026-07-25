@@ -1,0 +1,18 @@
+<h1>Canvases</h1>
+
+<div class="create-row">
+  <mat-form-field appearance="outline">
+    <mat-label>New canvas name</mat-label>
+    <input matInput [(ngModel)]="newCanvasName" (keyup.enter)="create()" />
+  </mat-form-field>
+  <button mat-raised-button color="primary" (click)="create()">Create</button>
+</div>
+
+<mat-nav-list>
+  @for (canvas of canvases(); track canvas.id) {
+  <mat-list-item>
+    <a [routerLink]="['/workspaces', workspaceId(), 'canvases', canvas.id]">{{ canvas.name }}</a>
+    <button mat-icon-button (click)="remove(canvas.id)"><mat-icon>delete</mat-icon></button>
+  </mat-list-item>
+  }
+</mat-nav-list>

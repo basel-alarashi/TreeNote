@@ -28,6 +28,7 @@ This project is being developed as a portfolio-quality application following Agi
 - 🔑 Google OAuth
 - 👤 User Profiles
 - 📂 Workspace Management
+- 🗺️ Canvas Management
 - 🌳 Tree-based Concept Maps
 - 🔗 Optional Multi-parent Relationships
 - 🖱️ Drag & Drop Editing
@@ -87,6 +88,7 @@ This project is being developed as a portfolio-quality application following Agi
 - SQL Server 2022
 - JWT Authentication
 - Google OAuth
+- Serilog (structured logging)
 
 ## Frontend
 
@@ -124,15 +126,17 @@ TreeNote/
 
 # 🚀 Development Roadmap
 
-| Sprint | Goal |
-|---------|------|
-| Sprint 0 | Planning & Architecture |
-| Sprint 1 | Authentication & Workspace |
-| Sprint 2 | Topic Management |
-| Sprint 3 | Visual Editor |
-| Sprint 4 | Search, Responsive UI & Offline |
-| Sprint 5 | Export & Performance |
-| Sprint 6 | Deployment & Portfolio |
+| Sprint | Goal | Status |
+|---------|------|:------:|
+| Sprint 0 | Project Planning & Initial Setup | ✅ Done |
+| Sprint 1 | Infrastructure & Application Foundation | ✅ Done |
+| Sprint 2 | Core Domain (Workspace, Canvas, Topics & Relationships) | ✅ Done |
+| Sprint 3 | Visual Canvas Editor | 🚧 In Progress |
+| Sprint 4 | Authentication & User Management | ⬜ Planned |
+| Sprint 5 | Search, Export & Offline Support | ⬜ Planned |
+| Sprint 6 | Performance, Deployment & Final Polish | ⬜ Planned |
+
+Note: authentication was deliberately deferred to Sprint 4 — Sprints 2–3 build the core domain and visual editor against a mocked current-user, then real auth is wired in without changing how the rest of the app consumes "who's logged in."
 
 ---
 
@@ -152,7 +156,7 @@ Project documentation is available in the `docs/` directory.
 
 # 🤝 Development Workflow
 
-This project follows Scrum with two-week sprints.
+This project follows Scrum with sprint-based iterations.
 
 Each sprint includes:
 
@@ -178,11 +182,11 @@ Each sprint includes:
 
 # 📈 Current Status
 
-**Current Version:** `v0.0.1`
+**Current Version:** `v0.2.0`
 
-**Current Sprint:** `Sprint 0`
+**Current Sprint:** `Sprint 3`
 
-**Status:** 🚧 Planning
+**Status:** 🚧 In Development — Authentication, Workspace, and Canvas/Topic/Relationship CRUD are functional against a mock user. Visual canvas editor (drag & drop, zoom, pan) is next.
 
 ---
 

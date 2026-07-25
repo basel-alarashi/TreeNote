@@ -1,0 +1,29 @@
+<h1>Workspaces</h1>
+
+<div class="create-row">
+  <mat-form-field appearance="outline">
+    <mat-label>New workspace name</mat-label>
+    <input matInput [(ngModel)]="newWorkspaceName" (keyup.enter)="create()" />
+  </mat-form-field>
+  <button mat-raised-button color="primary" (click)="create()">Create</button>
+</div>
+
+@if (loading()) {
+<p>Loading...</p>
+} @else {
+<mat-nav-list>
+  @for (workspace of workspaces(); track workspace.id) {
+  <mat-list-item>
+    @if (editingId === workspace.id) {
+    <input [(ngModel)]="editingName" (keyup.enter)="confirmRename()" />
+    <button mat-icon-button (click)="confirmRename()"><mat-icon>check</mat-icon></button>
+    <button mat-icon-button (click)="cancelRename()"><mat-icon>close</mat-icon></button>
+    } @else {
+    <a [routerLink]="['/workspaces', workspace.id, 'canvases']">{{ workspace.name }}</a>
+    <button mat-icon-button (click)="startRename(workspace)"><mat-icon>edit</mat-icon></button>
+    <button mat-icon-button (click)="remove(workspace.id)"><mat-icon>delete</mat-icon></button>
+    }
+  </mat-list-item>
+  }
+</mat-nav-list>
+}
