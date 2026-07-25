@@ -17,11 +17,19 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngularDev", policy =>
+        policy.WithOrigins("http://localhost:4200")
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+});
 
 var app = builder.Build();
 
 app.UseSerilogRequestLogging();
 app.UseMiddleware<TreeNote.Api.Middlewares.ExceptionHandlingMiddleware>();
+app.UseCors("AllowAngularDev");
 
 if (app.Environment.IsDevelopment())
 {
