@@ -1,3 +1,6 @@
-﻿namespace TreeNote.Application.Commands;
+﻿using System.ComponentModel.DataAnnotations;
+namespace TreeNote.Application.Commands;
 
-public record CreateCanvasCommand(Guid WorkspaceId, string Name);
+public record CreateCanvasCommand(
+    [Required] Guid WorkspaceId,
+    [Required, MaxLength(200)] string Name);

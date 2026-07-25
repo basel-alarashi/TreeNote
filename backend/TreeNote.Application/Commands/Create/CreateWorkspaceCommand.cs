@@ -1,3 +1,4 @@
-﻿namespace TreeNote.Application.Commands;
+﻿using System.ComponentModel.DataAnnotations;
+namespace TreeNote.Application.Commands;
 
-public record CreateWorkspaceCommand(string Name);
+public record CreateWorkspaceCommand([Required, MaxLength(200)] string Name);

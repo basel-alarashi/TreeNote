@@ -1,3 +1,4 @@
-﻿namespace TreeNote.Application.Commands;
+﻿using System.ComponentModel.DataAnnotations;
+namespace TreeNote.Application.Commands;
 
-public record UpdateCanvasCommand(string Name);
+public record UpdateCanvasCommand([Required, MaxLength(200)] string Name);
