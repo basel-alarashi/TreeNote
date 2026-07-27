@@ -40,7 +40,7 @@ public class CanvasService : ICanvasService
 
         var topics = await _context.Topics
             .Where(t => t.CanvasId == id)
-            .Select(t => new TopicDto(t.Id, t.CanvasId, t.Title, t.X, t.Y, t.Emoji, t.CreatedAt))
+            .Select(t => new TopicDto(t.Id, t.CanvasId, t.Title, t.X, t.Y, t.Emoji, t.CreatedAt, t.RowVersion))
             .ToListAsync();
 
         var relationships = await _context.Relationships
