@@ -102,6 +102,7 @@ public class CanvasService : ICanvasService
     {
         var canvas = await _context.Canvases
             .Include(c => c.Workspace)
+            .AsTracking()
             .FirstOrDefaultAsync(c => c.Id == id);
 
         if (canvas is null) throw new NotFoundException($"Canvas '{id}' was not found.");

@@ -78,7 +78,7 @@ public class WorkspaceService : IWorkspaceService
 
     private async Task<Workspace> GetOwnedWorkspaceAsync(Guid id)
     {
-        var workspace = await _context.Workspaces.FirstOrDefaultAsync(w => w.Id == id);
+        var workspace = await _context.Workspaces.AsTracking().FirstOrDefaultAsync(w => w.Id == id);
         if (workspace is null) throw new NotFoundException($"Workspace '{id}' was not found.");
         if (workspace.UserId != _currentUser.UserId) throw new ForbiddenAccessException();
         return workspace;

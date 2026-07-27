@@ -25,6 +25,10 @@ public class TopicsController : ControllerBase
     [HttpPut("{id:guid}")]
     public async Task<ActionResult<TopicDto>> Update(Guid id, UpdateTopicCommand command) => Ok(await _topicService.UpdateAsync(id, command));
 
+    [HttpPut("positions")]
+    public async Task<ActionResult<List<TopicDto>>> UpdatePositions(UpdateTopicPositionsCommand command)
+    => Ok(await _topicService.UpdatePositionsAsync(command));
+
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
