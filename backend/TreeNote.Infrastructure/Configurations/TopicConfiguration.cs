@@ -19,5 +19,7 @@ public class TopicConfiguration : IEntityTypeConfiguration<Topic>
             .HasMaxLength(10);
 
         builder.HasIndex(t => t.CanvasId);
+
+        builder.Property(t => t.RowVersion).IsRowVersion();
     }
 }

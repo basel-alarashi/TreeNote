@@ -9,6 +9,7 @@ public class Topic
     public double Y { get; set; }
     public string? Emoji { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public byte[] RowVersion { get; set; } = Array.Empty<byte>();
 
     public Canvas Canvas { get; set; } = null!;
 
