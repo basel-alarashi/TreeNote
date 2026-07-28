@@ -1,6 +1,10 @@
 @if (canvas(); as c) {
 <h1>{{ c.name }}</h1>
 
+<div class="canvas-viewport">
+  <app-canvas [topics]="c.topics" [relationships]="c.relationships" />
+</div>
+
 <div class="create-row">
   <mat-form-field appearance="outline">
     <mat-label>New root topic</mat-label>

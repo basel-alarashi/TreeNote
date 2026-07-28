@@ -8,12 +8,13 @@ import { MatInputModule } from '@angular/material/input';
 import { CanvasService } from '../../features/canvas/services/canvas.service';
 import { TopicService } from '../../features/topic/services/topic.service';
 import { TopicItemComponent } from '../../features/topic/components/topic-item/topic-item';
+import { CanvasComponent } from '../../features/canvas/components/canvas/canvas';
 import { CanvasDetail } from '../../models/canvas.model';
 
 @Component({
   selector: 'app-canvas-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, TopicItemComponent],
+  imports: [CommonModule, FormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, TopicItemComponent, CanvasComponent],
   templateUrl: './canvas-detail.html',
   styleUrl: './canvas-detail.scss',
 })
@@ -60,7 +61,7 @@ export class CanvasDetailComponent implements OnInit {
   rename(event: { id: string; title: string }): void {
     const topic = this.canvas()?.topics.find((t) => t.id === event.id);
     if (!topic) return;
-    this.topicService.update(event.id, { title: event.title, x: topic.x, y: topic.y, emoji: topic.emoji })
+    this.topicService.update(event.id, { title: event.title, x: topic.x, y: topic.y, emoji: topic.emoji, rowVersion: topic.rowVersion })
       .subscribe(() => this.load());
   }
 
