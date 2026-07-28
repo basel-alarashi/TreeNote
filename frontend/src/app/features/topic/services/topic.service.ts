@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { Topic, CreateTopicCommand, UpdateTopicCommand } from '../../../models/topic.model';
+import { Topic, CreateTopicCommand, UpdateTopicCommand, TopicPositionUpdate } from '../../../models/topic.model';
 
 @Injectable({ providedIn: 'root' })
 export class TopicService {
@@ -23,5 +23,9 @@ export class TopicService {
 
   duplicate(id: string): Observable<Topic> {
     return this.http.post<Topic>(`${this.baseUrl}/${id}/duplicate`, {});
+  }
+
+  updatePositions(positions: TopicPositionUpdate[]): Observable<Topic[]> {
+    return this.http.put<Topic[]>(`${this.baseUrl}/positions`, { positions });
   }
 }

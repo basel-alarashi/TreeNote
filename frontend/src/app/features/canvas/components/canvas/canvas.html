@@ -1,0 +1,25 @@
+<div #container
+     class="canvas-container"
+     (wheel)="onWheel($event)"
+     (mousedown)="onBackgroundMouseDown($event)"
+     (mousemove)="onBackgroundMouseMove($event)"
+     (mouseup)="onBackgroundMouseUp()"
+     (mouseleave)="onBackgroundMouseUp()">
+  <div class="toolbar">
+    <button mat-icon-button (click)="zoomIn()"><mat-icon>zoom_in</mat-icon></button>
+    <button mat-icon-button (click)="zoomOut()"><mat-icon>zoom_out</mat-icon></button>
+    <button mat-icon-button (click)="resetView()"><mat-icon>center_focus_strong</mat-icon></button>
+    <button mat-icon-button (click)="fitToScreen()"><mat-icon>fit_screen</mat-icon></button>
+  </div>
+
+  <svg class="canvas-svg">
+    <g [attr.transform]="viewport.transform()">
+      @for (rel of relationships(); track rel.parentId + rel.childId) {
+      <svg:path appConnector [parent]="topicById(rel.parentId)" [child]="topicById(rel.childId)"></svg:path>
+      }
+      @for (topic of topics(); track topic.id) {
+      <svg:g appTopic [topic]="topic"></svg:g>
+      }
+    </g>
+  </svg>
+</div>
