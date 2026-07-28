@@ -19,11 +19,23 @@
       }
       @for (topic of topics(); track topic.id) {
       <svg:g appTopic [topic]="topic" [selected]="selection.isSelected(topic.id)"
-             (mousedown)="onTopicMouseDown($event, topic)"></svg:g>
+             (mousedown)="onTopicMouseDown($event, topic)"
+             (contextmenu)="onTopicContextMenu($event, topic)"></svg:g>
       }
       @if (selectionBoxRect(); as box) {
       <svg:rect appSelectionBox [box]="box"></svg:rect>
       }
     </g>
   </svg>
+
+  <div class="context-menu-anchor" [style.left.px]="contextMenuPosition().x" [style.top.px]="contextMenuPosition().y"
+       [matMenuTriggerFor]="topicMenu" #menuTrigger="matMenuTrigger"></div>
+
+  <mat-menu #topicMenu="matMenu">
+    <button mat-menu-item (click)="addChild()"><mat-icon>add</mat-icon> Add Child</button>
+    <button mat-menu-item (click)="addSibling()"><mat-icon>add_box</mat-icon> Add Sibling</button>
+    <button mat-menu-item (click)="renameFromMenu()"><mat-icon>edit</mat-icon> Rename (F2)</button>
+    <button mat-menu-item (click)="duplicateFromMenu()"><mat-icon>content_copy</mat-icon> Duplicate</button>
+    <button mat-menu-item (click)="deleteFromMenu()"><mat-icon>delete</mat-icon> Delete</button>
+  </mat-menu>
 </div>

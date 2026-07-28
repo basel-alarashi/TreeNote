@@ -2,6 +2,7 @@ import { Component, ElementRef, HostListener, inject, input, output, signal, vie
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
 import { ViewportService } from '../../services/viewport.service';
 import { SelectionService } from '../../services/selection.service';
 import { TopicComponent } from '../../../topic/components/topic/topic';
@@ -14,7 +15,7 @@ import { TOPIC_WIDTH, TOPIC_HEIGHT } from '../../../../models/canvas-view.consta
 @Component({
   selector: 'app-canvas',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, TopicComponent, ConnectorComponent, SelectionBoxComponent],
+  imports: [CommonModule, MatButtonModule, MatIconModule, MatMenuModule, TopicComponent, ConnectorComponent, SelectionBoxComponent],
   templateUrl: './canvas.html',
   styleUrl: './canvas.scss',
 })
@@ -28,6 +29,18 @@ export class CanvasComponent {
   readonly viewport = inject(ViewportService);
   readonly selection = inject(SelectionService);
   readonly selectionBoxRect = signal<SelectionRect | null>(null);
+
+  readonly menuTrigger = viewChild.required<MatMenuTrigger>('menuTrigger');
+  readonly contextMenuTopicId = signal<string | null>(null);
+  readonly contextMenuPosition = signal({ x: 0, y: 0 });
+
+  readonly deleteRequested = output<string[]>();
+  readonly duplicateRequested = output<string[]>();
+  readonly addChildRequested = output<string>();
+  readonly addSiblingRequested = output<string>();
+  readonly renameRequested = output<string>();
+  readonly copyRequested = output<string[]>();
+  readonly pasteRequested = output<void>();
 
   private readonly containerRef = viewChild.required<ElementRef<HTMLDivElement>>('container');
 
@@ -132,9 +145,90 @@ export class CanvasComponent {
     this.isPanning = false;
   }
 
-  @HostListener('window:keydown.escape')
-  onEscape(): void {
-    this.selection.clear();
+  onTopicContextMenu(event: MouseEvent, topic: Topic): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!this.selection.isSelected(topic.id)) {
+      this.selection.select(topic.id, false);
+    }
+
+    this.contextMenuTopicId.set(topic.id);
+    this.contextMenuPosition.set({ x: event.clientX, y: event.clientY });
+    setTimeout(() => this.menuTrigger().openMenu());
+  }
+
+  private menuTargetIds(): string[] {
+    return this.selection.ids.length > 0
+      ? this.selection.ids
+      : this.contextMenuTopicId()
+        ? [this.contextMenuTopicId()!]
+        : [];
+  }
+
+  addChild(): void {
+    const id = this.contextMenuTopicId();
+    if (id) this.addChildRequested.emit(id);
+  }
+
+  addSibling(): void {
+    const id = this.contextMenuTopicId();
+    if (id) this.addSiblingRequested.emit(id);
+  }
+
+  renameFromMenu(): void {
+    const id = this.contextMenuTopicId();
+    if (id) this.renameRequested.emit(id);
+  }
+
+  deleteFromMenu(): void {
+    const ids = this.menuTargetIds();
+    if (ids.length) this.deleteRequested.emit(ids);
+  }
+
+  duplicateFromMenu(): void {
+    const ids = this.menuTargetIds();
+    if (ids.length) this.duplicateRequested.emit(ids);
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  onKeydown(event: KeyboardEvent): void {
+    const target = event.target as HTMLElement;
+    if (['INPUT', 'TEXTAREA'].includes(target.tagName) || target.isContentEditable) return;
+
+    if (event.key === 'Escape') {
+      this.selection.clear();
+      return;
+    }
+
+    if (event.key === 'Delete' || event.key === 'Backspace') {
+      if (this.selection.ids.length > 0) {
+        event.preventDefault();
+        this.deleteRequested.emit(this.selection.ids);
+      }
+      return;
+    }
+
+    if (event.key === 'F2') {
+      if (this.selection.ids.length === 1) {
+        event.preventDefault();
+        this.renameRequested.emit(this.selection.ids[0]);
+      }
+      return;
+    }
+
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'c') {
+      if (this.selection.ids.length > 0) {
+        event.preventDefault();
+        this.copyRequested.emit(this.selection.ids);
+      }
+      return;
+    }
+
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'v') {
+      event.preventDefault();
+      this.pasteRequested.emit();
+    }
   }
 
   zoomIn(): void { this.viewport.zoomIn(this.rect()); }

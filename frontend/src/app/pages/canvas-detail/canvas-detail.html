@@ -5,7 +5,14 @@
   <app-canvas [topics]="c.topics"
               [relationships]="c.relationships"
               (positionsChanged)="onPositionsChanged($event)"
-              (dragEnded)="onDragEnded($event)" />
+              (dragEnded)="onDragEnded($event)"
+              (addChildRequested)="onAddChildRequested($event)"
+              (addSiblingRequested)="onAddSiblingRequested($event)"
+              (renameRequested)="onRenameRequested($event)"
+              (deleteRequested)="onDeleteRequested($event)"
+              (duplicateRequested)="onDuplicateRequested($event)"
+              (copyRequested)="onCopyRequested($event)"
+              (pasteRequested)="onPasteRequested()" />
 </div>
 
 <div class="create-row">
