@@ -58,6 +58,35 @@ export class CanvasDetailComponent implements OnInit {
       .subscribe(() => { this.addingChildFor = null; this.load(); });
   }
 
+  onPositionsChanged(updates: { id: string; x: number; y: number }[]): void {
+    const current = this.canvas();
+    if (!current) return;
+    const topics = current.topics.map((t) => {
+      const match = updates.find((u) => u.id === t.id);
+      return match ? { ...t, x: match.x, y: match.y } : t;
+    });
+    this.canvas.set({ ...current, topics });
+  }
+
+  onDragEnded(ids: string[]): void {
+    const current = this.canvas();
+    if (!current) return;
+
+    const positions = ids
+      .map((id) => current.topics.find((t) => t.id === id))
+      .filter((t): t is NonNullable<typeof t> => !!t)
+      .map((t) => ({ id: t.id, x: t.x, y: t.y, rowVersion: t.rowVersion }));
+
+    if (positions.length === 0) return;
+
+    this.topicService.updatePositions(positions).subscribe((updated) => {
+      const latest = this.canvas();
+      if (!latest) return;
+      const merged = latest.topics.map((t) => updated.find((u) => u.id === t.id) ?? t);
+      this.canvas.set({ ...latest, topics: merged });
+    });
+  }
+
   rename(event: { id: string; title: string }): void {
     const topic = this.canvas()?.topics.find((t) => t.id === event.id);
     if (!topic) return;

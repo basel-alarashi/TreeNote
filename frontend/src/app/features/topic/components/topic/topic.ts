@@ -9,6 +9,7 @@ import { TOPIC_WIDTH, TOPIC_HEIGHT } from '../../../../models/canvas-view.consta
 })
 export class TopicComponent {
   readonly topic = input.required<Topic>();
+  readonly selected = input<boolean>(false);
   readonly width = TOPIC_WIDTH;
   readonly height = TOPIC_HEIGHT;
 

@@ -2,7 +2,10 @@
 <h1>{{ c.name }}</h1>
 
 <div class="canvas-viewport">
-  <app-canvas [topics]="c.topics" [relationships]="c.relationships" />
+  <app-canvas [topics]="c.topics"
+              [relationships]="c.relationships"
+              (positionsChanged)="onPositionsChanged($event)"
+              (dragEnded)="onDragEnded($event)" />
 </div>
 
 <div class="create-row">

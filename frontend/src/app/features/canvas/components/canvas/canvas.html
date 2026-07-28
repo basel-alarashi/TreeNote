@@ -18,7 +18,11 @@
       <svg:path appConnector [parent]="topicById(rel.parentId)" [child]="topicById(rel.childId)"></svg:path>
       }
       @for (topic of topics(); track topic.id) {
-      <svg:g appTopic [topic]="topic"></svg:g>
+      <svg:g appTopic [topic]="topic" [selected]="selection.isSelected(topic.id)"
+             (mousedown)="onTopicMouseDown($event, topic)"></svg:g>
+      }
+      @if (selectionBoxRect(); as box) {
+      <svg:rect appSelectionBox [box]="box"></svg:rect>
       }
     </g>
   </svg>
