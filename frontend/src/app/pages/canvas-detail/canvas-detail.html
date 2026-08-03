@@ -1,6 +1,24 @@
 @if (canvas(); as c) {
 <h1>{{ c.name }}</h1>
 
+@if (saving()) {
+<span class="save-indicator">Saving...</span>
+}
+
+<div class="canvas-viewport">
+  <app-canvas [topics]="c.topics"
+              [relationships]="c.relationships"
+              (positionsChanged)="onPositionsChanged($event)"
+              (dragEnded)="onDragEnded($event)"
+              (addChildRequested)="onAddChildRequested($event)"
+              (addSiblingRequested)="onAddSiblingRequested($event)"
+              (renameRequested)="onRenameRequested($event)"
+              (deleteRequested)="onDeleteRequested($event)"
+              (duplicateRequested)="onDuplicateRequested($event)"
+              (copyRequested)="onCopyRequested($event)"
+              (pasteRequested)="onPasteRequested()" />
+</div>
+
 <div class="create-row">
   <mat-form-field appearance="outline">
     <mat-label>New root topic</mat-label>

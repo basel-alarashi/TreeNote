@@ -1,0 +1,43 @@
+<div #container
+     class="canvas-container"
+     (wheel)="onWheel($event)"
+     (mousedown)="onBackgroundMouseDown($event)"
+     (mousemove)="onBackgroundMouseMove($event)"
+     (mouseup)="onBackgroundMouseUp()"
+     (mouseleave)="onBackgroundMouseUp()">
+  <div class="toolbar">
+    <button mat-icon-button [disabled]="!history.canUndo()" (click)="history.undo()"><mat-icon>undo</mat-icon></button>
+    <button mat-icon-button [disabled]="!history.canRedo()" (click)="history.redo()"><mat-icon>redo</mat-icon></button>
+    <button mat-icon-button (click)="zoomIn()"><mat-icon>zoom_in</mat-icon></button>
+    <button mat-icon-button (click)="zoomOut()"><mat-icon>zoom_out</mat-icon></button>
+    <button mat-icon-button (click)="resetView()"><mat-icon>center_focus_strong</mat-icon></button>
+    <button mat-icon-button (click)="fitToScreen()"><mat-icon>fit_screen</mat-icon></button>
+  </div>
+
+  <svg class="canvas-svg">
+    <g [attr.transform]="viewport.transform()">
+      @for (rel of relationships(); track rel.parentId + rel.childId) {
+      <svg:path appConnector [parent]="topicById(rel.parentId)" [child]="topicById(rel.childId)"></svg:path>
+      }
+      @for (topic of topics(); track topic.id) {
+      <svg:g appTopic [topic]="topic" [selected]="selection.isSelected(topic.id)"
+             (mousedown)="onTopicMouseDown($event, topic)"
+             (contextmenu)="onTopicContextMenu($event, topic)"></svg:g>
+      }
+      @if (selectionBoxRect(); as box) {
+      <svg:rect appSelectionBox [box]="box"></svg:rect>
+      }
+    </g>
+  </svg>
+
+  <div class="context-menu-anchor" [style.left.px]="contextMenuPosition().x" [style.top.px]="contextMenuPosition().y"
+       [matMenuTriggerFor]="topicMenu" #menuTrigger="matMenuTrigger"></div>
+
+  <mat-menu #topicMenu="matMenu">
+    <button mat-menu-item (click)="addChild()"><mat-icon>add</mat-icon> Add Child</button>
+    <button mat-menu-item (click)="addSibling()"><mat-icon>add_box</mat-icon> Add Sibling</button>
+    <button mat-menu-item (click)="renameFromMenu()"><mat-icon>edit</mat-icon> Rename (F2)</button>
+    <button mat-menu-item (click)="duplicateFromMenu()"><mat-icon>content_copy</mat-icon> Duplicate</button>
+    <button mat-menu-item (click)="deleteFromMenu()"><mat-icon>delete</mat-icon> Delete</button>
+  </mat-menu>
+</div>

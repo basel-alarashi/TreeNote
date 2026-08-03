@@ -70,15 +70,22 @@ public class WorkspaceService : IWorkspaceService
             .Select(t => t.Id)
             .ToListAsync();
 
-        await _relationshipCleanup.RemoveRelationshipsForTopicsAsync(topicIds);
+        try
+        {
+            await _relationshipCleanup.RemoveRelationshipsForTopicsAsync(topicIds);
 
-        _context.Workspaces.Remove(workspace); // cascades to Canvases -> Topics
-        await _context.SaveChangesAsync();
+            _context.Workspaces.Remove(workspace); // cascades to Canvases -> Topics
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConflictException("This item was already modified or deleted by another request.");
+        }
     }
 
     private async Task<Workspace> GetOwnedWorkspaceAsync(Guid id)
     {
-        var workspace = await _context.Workspaces.FirstOrDefaultAsync(w => w.Id == id);
+        var workspace = await _context.Workspaces.AsTracking().FirstOrDefaultAsync(w => w.Id == id);
         if (workspace is null) throw new NotFoundException($"Workspace '{id}' was not found.");
         if (workspace.UserId != _currentUser.UserId) throw new ForbiddenAccessException();
         return workspace;

@@ -131,8 +131,8 @@ TreeNote/
 | Sprint 0 | Project Planning & Initial Setup | ✅ Done |
 | Sprint 1 | Infrastructure & Application Foundation | ✅ Done |
 | Sprint 2 | Core Domain (Workspace, Canvas, Topics & Relationships) | ✅ Done |
-| Sprint 3 | Visual Canvas Editor | 🚧 In Progress |
-| Sprint 4 | Authentication & User Management | ⬜ Planned |
+| Sprint 3 | Visual Canvas Editor | ✅ Done |
+| Sprint 4 | Authentication & User Management | 🚧 In Progress |
 | Sprint 5 | Search, Export & Offline Support | ⬜ Planned |
 | Sprint 6 | Performance, Deployment & Final Polish | ⬜ Planned |
 

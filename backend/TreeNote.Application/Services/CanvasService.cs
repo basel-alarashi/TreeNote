@@ -40,7 +40,7 @@ public class CanvasService : ICanvasService
 
         var topics = await _context.Topics
             .Where(t => t.CanvasId == id)
-            .Select(t => new TopicDto(t.Id, t.CanvasId, t.Title, t.X, t.Y, t.Emoji, t.CreatedAt))
+            .Select(t => new TopicDto(t.Id, t.CanvasId, t.Title, t.X, t.Y, t.Emoji, t.CreatedAt, t.RowVersion))
             .ToListAsync();
 
         var relationships = await _context.Relationships
@@ -85,10 +85,17 @@ public class CanvasService : ICanvasService
             .Select(t => t.Id)
             .ToListAsync();
 
-        await _relationshipCleanup.RemoveRelationshipsForTopicsAsync(topicIds);
+        try
+        {
+            await _relationshipCleanup.RemoveRelationshipsForTopicsAsync(topicIds);
 
-        _context.Canvases.Remove(canvas); // cascades to Topics
-        await _context.SaveChangesAsync();
+            _context.Canvases.Remove(canvas); // cascades to Topics
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConflictException("This item was already modified or deleted by another request.");
+        }
     }
 
     private async Task EnsureWorkspaceOwnedAsync(Guid workspaceId)
@@ -102,6 +109,7 @@ public class CanvasService : ICanvasService
     {
         var canvas = await _context.Canvases
             .Include(c => c.Workspace)
+            .AsTracking()
             .FirstOrDefaultAsync(c => c.Id == id);
 
         if (canvas is null) throw new NotFoundException($"Canvas '{id}' was not found.");

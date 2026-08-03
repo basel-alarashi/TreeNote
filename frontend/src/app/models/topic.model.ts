@@ -6,6 +6,7 @@ export interface Topic {
   y: number;
   emoji: string | null;
   createdAt: string;
+  rowVersion: string; // base64, opaque — just echo it back on updates
 }
 
 export interface CreateTopicCommand {
@@ -22,4 +23,12 @@ export interface UpdateTopicCommand {
   x: number;
   y: number;
   emoji?: string | null;
+  rowVersion: string;
+}
+
+export interface TopicPositionUpdate {
+  id: string;
+  x: number;
+  y: number;
+  rowVersion: string;
 }

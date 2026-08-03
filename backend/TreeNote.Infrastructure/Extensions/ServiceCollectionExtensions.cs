@@ -15,7 +15,8 @@ public static class ServiceCollectionExtensions
         IConfiguration configuration)
     {
         services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"))
+           .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
         services.AddDataProtection();
         services
             .AddIdentityCore<ApplicationUser>(options =>
