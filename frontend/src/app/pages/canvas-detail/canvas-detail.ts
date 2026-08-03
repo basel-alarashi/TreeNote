@@ -14,7 +14,7 @@ import { CanvasComponent } from '../../features/canvas/components/canvas/canvas'
 import { CanvasDetail } from '../../models/canvas.model';
 import { CreateTopicCommand, Topic } from '../../models/topic.model';
 import { Relationship } from '../../models/relationship.model';
-import { forkJoin, concatMap, from, toArray } from 'rxjs';
+import { forkJoin, concatMap, from, toArray, finalize, Observable } from 'rxjs';
 
 @Component({
   selector: 'app-canvas-detail',
@@ -32,10 +32,16 @@ export class CanvasDetailComponent implements OnInit {
 
   readonly canvasId = signal('');
   readonly canvas = signal<CanvasDetail | null>(null);
+  readonly saving = signal(false);
   newRootTitle = '';
   addingChildFor: string | null = null;
   newChildTitle = '';
   private clipboardTopicIds: string[] = [];
+
+  private withSavingIndicator<T>(obs: Observable<T>): Observable<T> {
+    this.saving.set(true);
+    return obs.pipe(finalize(() => this.saving.set(false)));
+  }
 
   ngOnInit(): void {
     this.canvasId.set(this.route.snapshot.paramMap.get('canvasId')!);
@@ -100,7 +106,7 @@ export class CanvasDetailComponent implements OnInit {
 
     if (positions.length === 0) return;
 
-    this.topicService.updatePositions(positions).subscribe((updated) => {
+    this.withSavingIndicator(this.topicService.updatePositions(positions)).subscribe((updated) => {
       const latest = this.canvas();
       if (!latest) return;
       const merged = latest.topics.map((t) => updated.find((u) => u.id === t.id) ?? t);
@@ -191,8 +197,8 @@ export class CanvasDetailComponent implements OnInit {
   private applyRename(topicId: string, title: string): void {
     const topic = this.canvas()?.topics.find((t) => t.id === topicId);
     if (!topic) return;
-    this.topicService
-      .update(topicId, { title, x: topic.x, y: topic.y, emoji: topic.emoji, rowVersion: topic.rowVersion })
+    this.withSavingIndicator(this.topicService
+      .update(topicId, { title, x: topic.x, y: topic.y, emoji: topic.emoji, rowVersion: topic.rowVersion }))
       .subscribe(() => this.load());
   }
 

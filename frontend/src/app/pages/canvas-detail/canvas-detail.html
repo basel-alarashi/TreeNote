@@ -1,6 +1,10 @@
 @if (canvas(); as c) {
 <h1>{{ c.name }}</h1>
 
+@if (saving()) {
+<span class="save-indicator">Saving...</span>
+}
+
 <div class="canvas-viewport">
   <app-canvas [topics]="c.topics"
               [relationships]="c.relationships"
