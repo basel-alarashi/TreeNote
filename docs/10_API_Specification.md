@@ -147,6 +147,14 @@ Body: `{ "title": string, "x": number, "y": number, "emoji": string | null }`
 
 Covers rename and repositioning ("move," in the drag sense). Re-parenting a topic in the tree is done via the Relationship endpoints below, not here.
 
+```
+/topics/positions
+```
+
+Body: `{ "id": string, "x": number, "y": number, "rowVersion": string }`
+
+Indepenedent endpoint for changing topic positions with race conditioning support.
+
 DELETE
 
 ```

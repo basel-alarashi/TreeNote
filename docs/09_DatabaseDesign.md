@@ -51,6 +51,7 @@ A Workspace contains one or more Canvases. Each Canvas is an individual concept 
 | X | float | |
 | Y | float | |
 | Emoji | nvarchar(10) | |
+| RowVersion | timestamp | **Changed in Sprint 3** — Added for race conditioning in topic positions update | |
 | CreatedAt | datetime | |
 
 ---
