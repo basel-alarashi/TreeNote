@@ -8,10 +8,13 @@ import { MatInputModule } from '@angular/material/input';
 import { CanvasService } from '../../features/canvas/services/canvas.service';
 import { TopicService } from '../../features/topic/services/topic.service';
 import { RelationshipService } from '../../features/topic/services/relationship.service';
+import { HistoryService } from '../../features/canvas/services/history.service';
 import { TopicItemComponent } from '../../features/topic/components/topic-item/topic-item';
 import { CanvasComponent } from '../../features/canvas/components/canvas/canvas';
 import { CanvasDetail } from '../../models/canvas.model';
-import { forkJoin } from 'rxjs';
+import { CreateTopicCommand, Topic } from '../../models/topic.model';
+import { Relationship } from '../../models/relationship.model';
+import { forkJoin, concatMap, from, toArray } from 'rxjs';
 
 @Component({
   selector: 'app-canvas-detail',
@@ -25,6 +28,7 @@ export class CanvasDetailComponent implements OnInit {
   private readonly canvasService = inject(CanvasService);
   private readonly topicService = inject(TopicService);
   private readonly relationshipService = inject(RelationshipService);
+  private readonly history = inject(HistoryService);
 
   readonly canvasId = signal('');
   readonly canvas = signal<CanvasDetail | null>(null);
@@ -35,6 +39,7 @@ export class CanvasDetailComponent implements OnInit {
 
   ngOnInit(): void {
     this.canvasId.set(this.route.snapshot.paramMap.get('canvasId')!);
+    this.history.clear();
     this.load();
   }
 
@@ -72,14 +77,26 @@ export class CanvasDetailComponent implements OnInit {
     this.canvas.set({ ...current, topics });
   }
 
-  onDragEnded(ids: string[]): void {
+  onDragEnded(moves: { id: string; fromX: number; fromY: number; toX: number; toY: number }[]): void {
+    this.applyPositions(moves.map((m) => ({ id: m.id, x: m.toX, y: m.toY })));
+
+    this.history.push({
+      label: 'Move topics',
+      undo: () => this.applyPositions(moves.map((m) => ({ id: m.id, x: m.fromX, y: m.fromY }))),
+      redo: () => this.applyPositions(moves.map((m) => ({ id: m.id, x: m.toX, y: m.toY }))),
+    });
+  }
+
+  private applyPositions(target: { id: string; x: number; y: number }[]): void {
     const current = this.canvas();
     if (!current) return;
 
-    const positions = ids
-      .map((id) => current.topics.find((t) => t.id === id))
-      .filter((t): t is NonNullable<typeof t> => !!t)
-      .map((t) => ({ id: t.id, x: t.x, y: t.y, rowVersion: t.rowVersion }));
+    const positions = target
+      .map((t) => {
+        const topic = current.topics.find((ct) => ct.id === t.id);
+        return topic ? { id: t.id, x: t.x, y: t.y, rowVersion: topic.rowVersion } : null;
+      })
+      .filter((p): p is NonNullable<typeof p> => !!p);
 
     if (positions.length === 0) return;
 
@@ -89,6 +106,10 @@ export class CanvasDetailComponent implements OnInit {
       const merged = latest.topics.map((t) => updated.find((u) => u.id === t.id) ?? t);
       this.canvas.set({ ...latest, topics: merged });
     });
+  }
+
+  private deleteSequentially(ids: string[]) {
+    return from(ids).pipe(concatMap((id) => this.topicService.delete(id)), toArray());
   }
 
   rename(event: { id: string; title: string }): void {
@@ -111,9 +132,8 @@ export class CanvasDetailComponent implements OnInit {
     const title = prompt('New child topic title:', 'New Topic');
     if (!title) return;
     const parent = this.canvas()?.topics.find((t) => t.id === parentId);
-    this.topicService
-      .create({ canvasId: this.canvasId(), title, x: (parent?.x ?? 0) + 200, y: parent?.y ?? 0, parentId })
-      .subscribe(() => this.load());
+    const params = { canvasId: this.canvasId(), title, x: (parent?.x ?? 0) + 200, y: parent?.y ?? 0, parentId };
+    this.createWithHistory(params, 'Add child topic');
   }
 
   onAddSiblingRequested(topicId: string): void {
@@ -122,39 +142,125 @@ export class CanvasDetailComponent implements OnInit {
     const title = prompt('New sibling topic title:', 'New Topic');
     if (!title) return;
 
-    // If the topic has multiple parents, this picks the first one found —
-    // "sibling" is ambiguous once multi-parent is in play.
     const parentRelationship = current.relationships.find((r) => r.childId === topicId);
     const topic = current.topics.find((t) => t.id === topicId);
+    const params = {
+      canvasId: this.canvasId(),
+      title,
+      x: (topic?.x ?? 0) + 40,
+      y: (topic?.y ?? 0) + 80,
+      parentId: parentRelationship?.parentId ?? null,
+    };
+    this.createWithHistory(params, 'Add sibling topic');
+  }
 
-    this.topicService
-      .create({
-        canvasId: this.canvasId(),
-        title,
-        x: (topic?.x ?? 0) + 40,
-        y: (topic?.y ?? 0) + 80,
-        parentId: parentRelationship?.parentId ?? null,
-      })
-      .subscribe(() => this.load());
+  private createWithHistory(params: CreateTopicCommand, label: string): void {
+    const state = { createdId: '' };
+
+    const create = () => {
+      this.topicService.create(params).subscribe((created) => {
+        state.createdId = created.id;
+        this.load();
+      });
+    };
+    create();
+
+    this.history.push({
+      label,
+      undo: () => { if (state.createdId) this.topicService.delete(state.createdId).subscribe(() => this.load()); },
+      redo: () => create(),
+    });
   }
 
   onRenameRequested(topicId: string): void {
     const topic = this.canvas()?.topics.find((t) => t.id === topicId);
     if (!topic) return;
-    const title = prompt('Rename topic:', topic.title);
-    if (!title || title === topic.title) return;
+    const newTitle = prompt('Rename topic:', topic.title);
+    if (!newTitle || newTitle === topic.title) return;
+
+    const oldTitle = topic.title;
+    this.applyRename(topicId, newTitle);
+
+    this.history.push({
+      label: 'Rename topic',
+      undo: () => this.applyRename(topicId, oldTitle),
+      redo: () => this.applyRename(topicId, newTitle),
+    });
+  }
+
+  private applyRename(topicId: string, title: string): void {
+    const topic = this.canvas()?.topics.find((t) => t.id === topicId);
+    if (!topic) return;
     this.topicService
       .update(topicId, { title, x: topic.x, y: topic.y, emoji: topic.emoji, rowVersion: topic.rowVersion })
       .subscribe(() => this.load());
   }
 
   onDeleteRequested(ids: string[]): void {
+    const current = this.canvas();
+    if (!current) return;
     if (!confirm(`Delete ${ids.length} topic(s)?`)) return;
-    forkJoin(ids.map((id) => this.topicService.delete(id))).subscribe(() => this.load());
+
+    const snapshot = {
+      topics: current.topics.filter((t) => ids.includes(t.id)).map((t) => ({ ...t })),
+      relationships: current.relationships.filter((r) => ids.includes(r.parentId) || ids.includes(r.childId)).map((r) => ({ ...r })),
+    };
+
+    const state = { liveIds: [...ids] };
+
+    this.deleteSequentially(state.liveIds).subscribe(() => this.load());
+
+    this.history.push({
+      label: 'Delete topics',
+      undo: () => this.restoreDeletedTopics(snapshot, (newIds) => { state.liveIds = newIds; }),
+      redo: () => {
+        this.deleteSequentially(state.liveIds).subscribe(() => this.load());
+      },
+    });
+  }
+
+  private restoreDeletedTopics(
+    snapshot: { topics: Topic[]; relationships: Relationship[] },
+    onRestored: (newIds: string[]) => void,
+  ): void {
+    const createCalls = snapshot.topics.map((t) =>
+      this.topicService.create({ canvasId: this.canvasId(), title: t.title, x: t.x, y: t.y, emoji: t.emoji, parentId: null }),
+    );
+
+    forkJoin(createCalls).subscribe((created) => {
+      const idMap = new Map<string, string>();
+      snapshot.topics.forEach((t, i) => idMap.set(t.id, created[i].id));
+      onRestored(created.map((c) => c.id));
+
+      // Endpoints not in idMap were never deleted (external survivors) — reuse
+      // their original id directly rather than trying to remap it.
+      const relCalls = snapshot.relationships.map((r) => {
+        const parentId = idMap.get(r.parentId) ?? r.parentId;
+        const childId = idMap.get(r.childId) ?? r.childId;
+        return this.relationshipService.create(parentId, childId);
+      });
+
+      if (relCalls.length === 0) { this.load(); return; }
+      forkJoin(relCalls).subscribe(() => this.load());
+    });
   }
 
   onDuplicateRequested(ids: string[]): void {
-    forkJoin(ids.map((id) => this.topicService.duplicate(id))).subscribe(() => this.load());
+    const state = { duplicateIds: [] as string[] };
+
+    const performDuplicate = () => {
+      forkJoin(ids.map((id) => this.topicService.duplicate(id))).subscribe((created) => {
+        state.duplicateIds = created.map((c) => c.id);
+        this.load();
+      });
+    };
+    performDuplicate();
+
+    this.history.push({
+      label: 'Duplicate topics',
+      undo: () => { this.deleteSequentially(state.duplicateIds).subscribe(() => this.load()); },
+      redo: () => performDuplicate(),
+    });
   }
 
   onCopyRequested(ids: string[]): void {
@@ -163,30 +269,33 @@ export class CanvasDetailComponent implements OnInit {
 
   onPasteRequested(): void {
     if (this.clipboardTopicIds.length === 0) return;
-
     const current = this.canvas();
     if (!current) return;
 
-    // Only edges where BOTH endpoints were copied get recreated between the
-    // duplicates. Edges to topics outside the copied set are left alone.
     const internalEdges = current.relationships.filter(
       (r) => this.clipboardTopicIds.includes(r.parentId) && this.clipboardTopicIds.includes(r.childId),
     );
 
-    forkJoin(this.clipboardTopicIds.map((id) => this.topicService.duplicate(id))).subscribe((duplicates) => {
-      if (internalEdges.length === 0) {
-        this.load();
-        return;
-      }
+    const state = { pastedIds: [] as string[] };
 
-      const idMap = new Map<string, string>();
-      this.clipboardTopicIds.forEach((oldId, index) => idMap.set(oldId, duplicates[index].id));
+    const performPaste = () => {
+      forkJoin(this.clipboardTopicIds.map((id) => this.topicService.duplicate(id))).subscribe((duplicates) => {
+        state.pastedIds = duplicates.map((d) => d.id);
+        if (internalEdges.length === 0) { this.load(); return; }
 
-      const relationshipCalls = internalEdges.map((edge) =>
-        this.relationshipService.create(idMap.get(edge.parentId)!, idMap.get(edge.childId)!),
-      );
+        const idMap = new Map<string, string>();
+        this.clipboardTopicIds.forEach((oldId, index) => idMap.set(oldId, duplicates[index].id));
 
-      forkJoin(relationshipCalls).subscribe(() => this.load());
+        const relCalls = internalEdges.map((edge) => this.relationshipService.create(idMap.get(edge.parentId)!, idMap.get(edge.childId)!));
+        forkJoin(relCalls).subscribe(() => this.load());
+      });
+    };
+    performPaste();
+
+    this.history.push({
+      label: 'Paste topics',
+      undo: () => { this.deleteSequentially(state.pastedIds).subscribe(() => this.load()); },
+      redo: () => performPaste(),
     });
   }
 }

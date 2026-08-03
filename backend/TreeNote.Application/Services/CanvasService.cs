@@ -85,10 +85,17 @@ public class CanvasService : ICanvasService
             .Select(t => t.Id)
             .ToListAsync();
 
-        await _relationshipCleanup.RemoveRelationshipsForTopicsAsync(topicIds);
+        try
+        {
+            await _relationshipCleanup.RemoveRelationshipsForTopicsAsync(topicIds);
 
-        _context.Canvases.Remove(canvas); // cascades to Topics
-        await _context.SaveChangesAsync();
+            _context.Canvases.Remove(canvas); // cascades to Topics
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConflictException("This item was already modified or deleted by another request.");
+        }
     }
 
     private async Task EnsureWorkspaceOwnedAsync(Guid workspaceId)

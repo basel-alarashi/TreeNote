@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
 import { ViewportService } from '../../services/viewport.service';
 import { SelectionService } from '../../services/selection.service';
+import { HistoryService } from '../../services/history.service';
 import { TopicComponent } from '../../../topic/components/topic/topic';
 import { ConnectorComponent } from '../connector/connector';
 import { SelectionBoxComponent, SelectionRect } from '../selection-box/selection-box';
@@ -24,10 +25,11 @@ export class CanvasComponent {
   readonly relationships = input.required<Relationship[]>();
 
   readonly positionsChanged = output<{ id: string; x: number; y: number }[]>();
-  readonly dragEnded = output<string[]>();
+  readonly dragEnded = output<{ id: string; fromX: number; fromY: number; toX: number; toY: number }[]>();
 
   readonly viewport = inject(ViewportService);
   readonly selection = inject(SelectionService);
+  readonly history = inject(HistoryService);
   readonly selectionBoxRect = signal<SelectionRect | null>(null);
 
   readonly menuTrigger = viewChild.required<MatMenuTrigger>('menuTrigger');
@@ -127,7 +129,14 @@ export class CanvasComponent {
   onBackgroundMouseUp(): void {
     if (this.isDragging) {
       this.isDragging = false;
-      if (this.draggingIds.length > 0) this.dragEnded.emit([...this.draggingIds]);
+      if (this.draggingIds.length > 0) {
+        const moves = this.draggingIds.map((id) => {
+          const origin = this.dragOrigin.get(id)!;
+          const t = this.topicById(id)!;
+          return { id, fromX: origin.x, fromY: origin.y, toX: t.x, toY: t.y };
+        });
+        this.dragEnded.emit(moves);
+      }
       this.draggingIds = [];
       this.dragOrigin.clear();
       return;
@@ -228,6 +237,18 @@ export class CanvasComponent {
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'v') {
       event.preventDefault();
       this.pasteRequested.emit();
+    }
+
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') {
+      event.preventDefault();
+      this.history.undo();
+      return;
+    }
+
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'y') {
+      event.preventDefault();
+      this.history.redo();
+      return;
     }
   }
 

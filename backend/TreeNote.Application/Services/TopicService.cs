@@ -128,9 +128,17 @@ public class TopicService : ITopicService
     public async Task DeleteAsync(Guid id)
     {
         var topic = await GetTrackedOwnedTopicAsync(id);
-        await _relationshipCleanup.RemoveRelationshipsForTopicsAsync(new[] { id });
-        _context.Topics.Remove(topic);
-        await _context.SaveChangesAsync();
+
+        try
+        {
+            await _relationshipCleanup.RemoveRelationshipsForTopicsAsync(new[] { id });
+            _context.Topics.Remove(topic);
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConflictException("This item was already modified or deleted by another request.");
+        }
     }
 
     public async Task<TopicDto> DuplicateAsync(Guid id)

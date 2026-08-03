@@ -70,10 +70,17 @@ public class WorkspaceService : IWorkspaceService
             .Select(t => t.Id)
             .ToListAsync();
 
-        await _relationshipCleanup.RemoveRelationshipsForTopicsAsync(topicIds);
+        try
+        {
+            await _relationshipCleanup.RemoveRelationshipsForTopicsAsync(topicIds);
 
-        _context.Workspaces.Remove(workspace); // cascades to Canvases -> Topics
-        await _context.SaveChangesAsync();
+            _context.Workspaces.Remove(workspace); // cascades to Canvases -> Topics
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConflictException("This item was already modified or deleted by another request.");
+        }
     }
 
     private async Task<Workspace> GetOwnedWorkspaceAsync(Guid id)
