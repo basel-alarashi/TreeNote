@@ -20,6 +20,7 @@ public class ApplicationDbContext
     public DbSet<Canvas> Canvases => Set<Canvas>();
     public DbSet<Topic> Topics => Set<Topic>();
     public DbSet<Relationship> Relationships => Set<Relationship>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
