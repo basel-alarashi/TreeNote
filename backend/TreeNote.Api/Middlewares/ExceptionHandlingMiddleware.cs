@@ -23,6 +23,10 @@ public class ExceptionHandlingMiddleware
         {
             await WriteProblemAsync(context, StatusCodes.Status404NotFound, ex.Message);
         }
+        catch (UnauthorizedException ex)
+        {
+            await WriteProblemAsync(context, StatusCodes.Status401Unauthorized, ex.Message);
+        }
         catch (ForbiddenAccessException ex)
         {
             await WriteProblemAsync(context, StatusCodes.Status403Forbidden, ex.Message);

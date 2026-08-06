@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using TreeNote.Application.Commands;
 using TreeNote.Application.DTOs;
 using TreeNote.Application.Interfaces;
@@ -7,6 +8,7 @@ namespace TreeNote.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/workspaces")]
+[Authorize]
 public class WorkspacesController : ControllerBase
 {
     private readonly IWorkspaceService _workspaceService;
