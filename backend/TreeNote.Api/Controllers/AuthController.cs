@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using TreeNote.Application.Commands.GoogleLogin;
 using TreeNote.Application.Commands.Login;
 using TreeNote.Application.Commands.Logout;
 using TreeNote.Application.Commands.RefreshToken;
@@ -41,5 +42,12 @@ public class AuthController : ControllerBase
     {
         await _mediator.Send(command);
         return NoContent();
+    }
+
+    [HttpPost("google")]
+    public async Task<IActionResult> GoogleLogin(GoogleLoginCommand command)
+    {
+        var result = await _mediator.Send(command);
+        return Ok(result);
     }
 }

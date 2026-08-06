@@ -85,6 +85,11 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
+builder.Services.Configure<GoogleSettings>(
+    builder.Configuration.GetSection(GoogleSettings.SectionName));
+
+builder.Services.AddScoped<IGoogleAuthService, GoogleAuthService>();
+
 var app = builder.Build();
 
 app.UseSerilogRequestLogging();
