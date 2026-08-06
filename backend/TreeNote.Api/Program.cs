@@ -56,7 +56,9 @@ builder.Services.AddScoped<IJwtSettingsAccessor, JwtSettingsAccessor>();
 
 builder.Services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
 builder.Services.AddScoped<IIdentityService, IdentityService>();
-builder.Services.AddScoped<IOwnershipService, OwnershipService>();
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 var jwtSettings = builder.Configuration
     .GetSection(JwtSettings.SectionName)
@@ -102,7 +104,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
     using var scope = app.Services.CreateScope();
-    await TreeNote.Infrastructure.Persistence.DbSeeder.SeedMockUserAsync(scope.ServiceProvider);
 }
 
 app.UseHttpsRedirection();
