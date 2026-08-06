@@ -56,6 +56,7 @@ builder.Services.AddScoped<IJwtSettingsAccessor, JwtSettingsAccessor>();
 
 builder.Services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
 builder.Services.AddScoped<IIdentityService, IdentityService>();
+builder.Services.AddScoped<IOwnershipService, OwnershipService>();
 
 var jwtSettings = builder.Configuration
     .GetSection(JwtSettings.SectionName)
