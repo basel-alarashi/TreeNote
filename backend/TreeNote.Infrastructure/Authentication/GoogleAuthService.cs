@@ -34,7 +34,7 @@ public class GoogleAuthService : IGoogleAuthService
         }
         catch (InvalidJwtException)
         {
-            throw new ForbiddenAccessException("Invalid Google ID token.");
+            throw new UnauthorizedException("Invalid Google ID token.");
         }
     }
 }

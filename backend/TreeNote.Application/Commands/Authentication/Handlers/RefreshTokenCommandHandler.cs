@@ -34,7 +34,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, A
             .FirstOrDefaultAsync(rt => rt.TokenHash == incomingHash, cancellationToken);
 
         if (stored is null)
-            throw new ForbiddenAccessException("Invalid refresh token.");
+            throw new UnauthorizedException("Invalid refresh token.");
 
         if (stored.RevokedAt is not null)
         {
@@ -46,15 +46,15 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, A
                 t.RevokedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync(cancellationToken);
-            throw new ForbiddenAccessException("Refresh token has already been used. All sessions revoked.");
+            throw new UnauthorizedException("Refresh token has already been used. All sessions revoked.");
         }
 
         if (DateTime.UtcNow >= stored.ExpiresAt)
-            throw new ForbiddenAccessException("Refresh token has expired.");
+            throw new UnauthorizedException("Refresh token has expired.");
 
         var user = await _identityService.FindByIdAsync(stored.UserId);
         if (user is null)
-            throw new ForbiddenAccessException("User no longer exists.");
+            throw new UnauthorizedException("User no longer exists.");
 
         var newRefreshToken = _tokenService.GenerateRefreshToken();
         var newHash = _tokenService.HashToken(newRefreshToken);

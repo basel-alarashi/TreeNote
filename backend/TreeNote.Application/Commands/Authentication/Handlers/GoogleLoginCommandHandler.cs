@@ -33,7 +33,7 @@ public class GoogleLoginCommandHandler : IRequestHandler<GoogleLoginCommand, Aut
         var payload = await _googleAuthService.VerifyIdTokenAsync(request.IdToken);
 
         if (!payload.EmailVerified)
-            throw new ForbiddenAccessException("Google account email is not verified.");
+            throw new UnauthorizedException("Google account email is not verified.");
 
         var result = await _identityService.GetOrCreateExternalUserAsync(
             provider: "Google",

@@ -29,7 +29,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResultDto>
     {
         var user = await _identityService.FindByEmailAsync(request.Email);
         if (user is null || !await _identityService.CheckPasswordAsync(user.Id, request.Password))
-            throw new ForbiddenAccessException("Invalid email or password.");
+            throw new UnauthorizedException("Invalid email or password.");
 
         var accessToken = _tokenService.GenerateAccessToken(user.Id, user.Email);
         var refreshToken = _tokenService.GenerateRefreshToken();
