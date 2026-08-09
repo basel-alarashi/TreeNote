@@ -1,27 +1,134 @@
-import { Injectable, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, signal, computed } from '@angular/core';
+import { Router } from '@angular/router';
+import { Observable, tap, catchError, of, map } from 'rxjs';
+import { jwtDecode } from 'jwt-decode';
+import { environment } from '../../../environments/environment';
+import { TokenStorageService } from './token-storage.service';
+import {
+  AuthResult,
+  CurrentUser,
+  GoogleLoginRequest,
+  LoginRequest,
+  RefreshTokenRequest,
+  RegisterRequest
+} from './auth.models';
 
-// Temporary mock authentication. Sprint 4 replaces the internals of this
-// service with real login/logout/token handling — nothing that consumes
-// AuthService (the guard, the interceptor, components) needs to change.
+interface JwtPayload {
+  sub: string;
+  email: string;
+  exp: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  // Matches MockCurrentUserService.MockUserId on the backend.
-  private readonly mockUserId = '11111111-1111-1111-1111-111111111111';
+  private readonly currentUserSignal = signal<CurrentUser | null>(null);
 
-  readonly isAuthenticated = signal(true);
-  readonly userId = signal<string | null>(this.mockUserId);
+  readonly currentUser = computed(() => this.currentUserSignal());
+  readonly isAuthenticated = computed(() => this.currentUserSignal() !== null);
 
-  login(): void {
-    this.isAuthenticated.set(true);
-    this.userId.set(this.mockUserId);
+  constructor(
+    private readonly http: HttpClient,
+    private readonly tokenStorage: TokenStorageService,
+    private readonly router: Router
+  ) {
+    this.restoreSession();
+  }
+
+  register(request: RegisterRequest): Observable<AuthResult> {
+    return this.http
+      .post<AuthResult>(`${environment.apiUrl}/auth/register`, request)
+      .pipe(tap((result) => this.handleAuthResult(result)));
+  }
+
+  login(request: LoginRequest): Observable<AuthResult> {
+    return this.http
+      .post<AuthResult>(`${environment.apiUrl}/auth/login`, request)
+      .pipe(tap((result) => this.handleAuthResult(result)));
+  }
+
+  loginWithGoogle(request: GoogleLoginRequest): Observable<AuthResult> {
+    return this.http
+      .post<AuthResult>(`${environment.apiUrl}/auth/google`, request)
+      .pipe(tap((result) => this.handleAuthResult(result)));
+  }
+
+  refreshToken(): Observable<AuthResult | null> {
+    const refreshToken = this.tokenStorage.getRefreshToken();
+    if (!refreshToken) {
+      return of(null);
+    }
+
+    const body: RefreshTokenRequest = { refreshToken };
+
+    return this.http.post<AuthResult>(`${environment.apiUrl}/auth/refresh`, body).pipe(
+      tap((result) => this.handleAuthResult(result)),
+      catchError(() => {
+        this.clearSession();
+        return of(null);
+      })
+    );
   }
 
   logout(): void {
-    this.isAuthenticated.set(false);
-    this.userId.set(null);
+    const refreshToken = this.tokenStorage.getRefreshToken();
+
+    // Fire-and-forget: clear local session immediately regardless of API result,
+    // since the user's intent is to be logged out on this device either way.
+    if (refreshToken) {
+      this.http
+        .post(`${environment.apiUrl}/auth/logout`, { refreshToken })
+        .pipe(catchError(() => of(null)))
+        .subscribe();
+    }
+
+    this.clearSession();
+    this.router.navigate(['/login']);
   }
 
-  getToken(): string | null {
-    return this.isAuthenticated() ? 'mock-token' : null;
+  getAccessToken(): string | null {
+    return this.tokenStorage.getAccessToken();
+  }
+
+  /** Restores session on app startup from a persisted refresh token. */
+  private restoreSession(): void {
+    const accessToken = this.tokenStorage.getAccessToken();
+    const refreshToken = this.tokenStorage.getRefreshToken();
+
+    if (!refreshToken) {
+      return;
+    }
+
+    if (accessToken && !this.isExpired(accessToken)) {
+      this.setCurrentUserFromToken(accessToken);
+      return;
+    }
+
+    // Access token missing/expired but we have a refresh token — try silently.
+    this.refreshToken().subscribe();
+  }
+
+  private handleAuthResult(result: AuthResult): void {
+    this.tokenStorage.setTokens(result.accessToken, result.refreshToken);
+    this.currentUserSignal.set({ userId: result.userId, email: result.email });
+  }
+
+  private clearSession(): void {
+    this.tokenStorage.clear();
+    this.currentUserSignal.set(null);
+  }
+
+  private setCurrentUserFromToken(accessToken: string): void {
+    const payload = jwtDecode<JwtPayload>(accessToken);
+    this.currentUserSignal.set({ userId: payload.sub, email: payload.email });
+  }
+
+  private isExpired(accessToken: string): boolean {
+    try {
+      const payload = jwtDecode<JwtPayload>(accessToken);
+      return Date.now() >= payload.exp * 1000;
+    } catch {
+      return true;
+    }
   }
 }
