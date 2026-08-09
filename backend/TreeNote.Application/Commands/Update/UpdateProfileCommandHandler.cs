@@ -1,8 +1,7 @@
 ﻿using MediatR;
-using TreeNote.Application.Authentication.Interfaces;
-using TreeNote.Application.Common.Exceptions;
-using TreeNote.Application.Common.Interfaces;
-using TreeNote.Application.Users.DTOs;
+using TreeNote.Application.Interfaces;
+using TreeNote.Application.Exceptions;
+using TreeNote.Application.DTOs;
 
 namespace TreeNote.Application.Commands;
 

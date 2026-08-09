@@ -1,9 +1,8 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TreeNote.Application.Users.Commands.ChangePassword;
-using TreeNote.Application.Users.Commands.UpdateProfile;
-using TreeNote.Application.Users.Queries.GetCurrentUser;
+using TreeNote.Application.Commands;
+using TreeNote.Application.Queries;
 
 namespace TreeNote.Api.Controllers;
 

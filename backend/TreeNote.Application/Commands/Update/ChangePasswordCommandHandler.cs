@@ -1,9 +1,8 @@
 ﻿using MediatR;
-using TreeNote.Application.Authentication.Interfaces;
-using TreeNote.Application.Common.Exceptions;
-using TreeNote.Application.Common.Interfaces;
+using TreeNote.Application.Interfaces;
+using TreeNote.Application.Exceptions;
 
-namespace TreeNote.Application.Users.Commands.ChangePassword;
+namespace TreeNote.Application.Commands;
 
 public class ChangePasswordCommandHandler : IRequestHandler<ChangePasswordCommand>
 {
@@ -22,6 +21,6 @@ public class ChangePasswordCommandHandler : IRequestHandler<ChangePasswordComman
             _currentUser.UserId, request.CurrentPassword, request.NewPassword);
 
         if (!result.Succeeded)
-            throw new ValidationException(string.Join("; ", result.Errors));
+            throw new BusinessRuleException(string.Join("; ", result.Errors));
     }
 }

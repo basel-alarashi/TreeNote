@@ -1,7 +1,6 @@
 ﻿using MediatR;
 using TreeNote.Application.Interfaces;
 using TreeNote.Application.Exceptions;
-using TreeNote.Application.Interfaces;
 using TreeNote.Application.DTOs;
 
 namespace TreeNote.Application.Queries;
