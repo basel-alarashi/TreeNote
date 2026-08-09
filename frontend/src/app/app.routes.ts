@@ -18,6 +18,10 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'workspaces', pathMatch: 'full' },
       {
+        path: 'profile',
+        loadComponent: () => import('./pages/profile/profile').then(m => m.ProfileComponent)
+      }
+      {
         path: 'workspaces',
         loadComponent: () =>
           import('./pages/workspace-list/workspace-list').then((m) => m.WorkspaceListComponent),
