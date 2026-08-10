@@ -58,7 +58,7 @@ This project is being developed as a portfolio-quality application following Agi
 
                      │
 
-             REST API (.NET 8)
+             REST API (.NET 10)
 
                      │
 
@@ -83,7 +83,7 @@ This project is being developed as a portfolio-quality application following Agi
 
 ## Backend
 
-- ASP.NET Core 8
+- ASP.NET Core 10
 - Entity Framework Core
 - SQL Server 2022
 - JWT Authentication
@@ -132,11 +132,9 @@ TreeNote/
 | Sprint 1 | Infrastructure & Application Foundation | ✅ Done |
 | Sprint 2 | Core Domain (Workspace, Canvas, Topics & Relationships) | ✅ Done |
 | Sprint 3 | Visual Canvas Editor | ✅ Done |
-| Sprint 4 | Authentication & User Management | 🚧 In Progress |
-| Sprint 5 | Search, Export & Offline Support | ⬜ Planned |
+| Sprint 4 | Authentication & User Management | ✅ Done |
+| Sprint 5 | Search, Export & Offline Support | 🚧 In Progress |
 | Sprint 6 | Performance, Deployment & Final Polish | ⬜ Planned |
-
-Note: authentication was deliberately deferred to Sprint 4 — Sprints 2–3 build the core domain and visual editor against a mocked current-user, then real auth is wired in without changing how the rest of the app consumes "who's logged in."
 
 ---
 
@@ -182,11 +180,11 @@ Each sprint includes:
 
 # 📈 Current Status
 
-**Current Version:** `v0.2.0`
+**Current Version:** `v0.3.0`
 
-**Current Sprint:** `Sprint 3`
+**Current Sprint:** `Sprint 4`
 
-**Status:** 🚧 In Development — Authentication, Workspace, and Canvas/Topic/Relationship CRUD are functional against a mock user. Visual canvas editor (drag & drop, zoom, pan) is next.
+**Status:** 🚧 In Development — Authentication (JWT + refresh token rotation + Google OAuth), authorization/ownership enforcement, and user profile management are complete. Search, Export, and Offline support are next.
 
 ---
 
