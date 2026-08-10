@@ -5,7 +5,7 @@
     <mat-label>New workspace name</mat-label>
     <input matInput [(ngModel)]="newWorkspaceName" (keyup.enter)="create()" />
   </mat-form-field>
-  <button mat-raised-button color="primary" (click)="create()">Create</button>
+  <button class="create-row-button" mat-raised-button color="primary" (click)="create()">Create</button>
 </div>
 
 @if (loading()) {

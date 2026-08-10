@@ -1,0 +1,39 @@
+<div class="search-bar">
+  <div class="search-bar__field">
+    <input
+      type="text"
+      class="search-bar__input"
+      placeholder="Search topics…"
+      [value]="query()"
+      (input)="onInputChange($any($event.target).value)"
+      aria-label="Search topics"
+    />
+    @if (query()) {
+      <button type="button" class="search-bar__clear" (click)="clear()" aria-label="Clear search">
+        ✕
+      </button>
+    }
+  </div>
+
+  @if (isSearching()) {
+    <div class="search-bar__status">Searching…</div>
+  }
+
+  @if (hasSearched() && !isSearching()) {
+    @if (results().length === 0) {
+      <div class="search-bar__empty">No topics found.</div>
+    } @else {
+      <ul class="search-bar__results">
+        @for (result of results(); track result.topicId) {
+          <li class="search-bar__result" (click)="selectResult(result)">
+            @if (result.emoji) {
+              <span class="search-bar__result-emoji">{{ result.emoji }}</span>
+            }
+            <span class="search-bar__result-title">{{ result.title }}</span>
+            <span class="search-bar__result-canvas">{{ result.canvasName }}</span>
+          </li>
+        }
+      </ul>
+    }
+  }
+</div>
