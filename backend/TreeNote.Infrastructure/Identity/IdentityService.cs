@@ -100,4 +100,32 @@ public class IdentityService : IIdentityService
 
         return new ExternalLoginResult(new UserDto(newUser.Id, newUser.Email!), true, false);
     }
+
+    public async Task<UserProfileDtoResult?> GetProfileAsync(Guid userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        return user is null
+            ? null
+            : new UserProfileDtoResult(user.Id, user.Email!, user.DisplayName, user.CreatedAt);
+    }
+
+    public async Task<bool> UpdateDisplayNameAsync(Guid userId, string displayName)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user is null) return false;
+
+        user.DisplayName = displayName;
+        var result = await _userManager.UpdateAsync(user);
+        return result.Succeeded;
+    }
+
+    public async Task<IdentityOperationResult> ChangePasswordAsync(Guid userId, string currentPassword, string newPassword)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user is null)
+            return new IdentityOperationResult(false, new[] { "User not found." });
+
+        var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+        return new IdentityOperationResult(result.Succeeded, result.Errors.Select(e => e.Description).ToList());
+    }
 }

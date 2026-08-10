@@ -30,7 +30,7 @@ public static class ServiceCollectionExtensions
             .AddDefaultTokenProviders();
         services.AddHealthChecks()
             .AddDbContextCheck<ApplicationDbContext>();
-        services.AddScoped<ICurrentUserService, MockCurrentUserService>();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
 
         return services;

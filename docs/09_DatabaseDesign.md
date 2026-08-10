@@ -12,8 +12,15 @@ Sprint 1 replaced the hand-rolled `Users` table originally sketched here with AS
 | Email | nvarchar | Identity-managed (`NormalizedEmail` also exists) |
 | PasswordHash | nvarchar | Identity-managed hashing, not raw storage |
 | CreatedAt | datetime | Added via `ApplicationUser : IdentityUser<Guid>` — the one extra column Identity doesn't provide by default |
+| DisplayName | nvarchar(100)? | Added Sprint 4 — user-editable, separate from Identity's `UserName` |
 
 Identity also adds several columns not listed here (`UserName`, `SecurityStamp`, `ConcurrencyStamp`, lockout fields, etc.) — see `TreeNote.Infrastructure/Identity/ApplicationUser.cs` for the authoritative definition.
+
+---
+
+### AspNetUserLogins *(Identity-managed, in use since Sprint 4)*
+
+Stores external login links (`LoginProvider`, `ProviderKey`) — used for Google OAuth. A user can have a password-based account and a linked Google login simultaneously; both authenticate to the same `AspNetUsers` row.
 
 ---
 
@@ -69,14 +76,21 @@ Both FKs use **`Restrict`**, not `Cascade` — SQL Server disallows multiple cas
 
 ---
 
-### RefreshTokens *(not yet implemented — planned for Sprint 4)*
+### RefreshTokens *(added Sprint 4)*
 
-| Column | Type |
-|---------|------|
-| Id | uniqueidentifier |
-| UserId | FK |
-| Token | nvarchar |
-| Expiration | datetime |
+| Column | Type | Notes |
+|---------|------|-------|
+| Id | uniqueidentifier | |
+| UserId | FK → AspNetUsers.Id | |
+| TokenHash | nvarchar(256) | SHA-256 hash of the raw token; raw value is never persisted |
+| ExpiresAt | datetime | |
+| CreatedAt | datetime | |
+| RevokedAt | datetime? | Null while active |
+| ReplacedByTokenHash | nvarchar(256)? | Set when rotated; supports reuse-detection |
+
+Indexes: `TokenHash` (unique), `UserId`.
+
+Reuse of a revoked token revokes all of that user's active refresh tokens (see API spec).
 
 ---
 

@@ -1,4 +1,6 @@
 ﻿using Serilog;
+using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using System.Text;
 using Microsoft.OpenApi;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -92,6 +94,10 @@ builder.Services.Configure<GoogleSettings>(
     builder.Configuration.GetSection(GoogleSettings.SectionName));
 
 builder.Services.AddScoped<IGoogleAuthService, GoogleAuthService>();
+
+builder.Services.AddMediatR(cfg => {
+    cfg.RegisterServicesFromAssembly(typeof(TreeNote.Application.Commands.Register.RegisterCommand).Assembly);
+});
 
 var app = builder.Build();
 

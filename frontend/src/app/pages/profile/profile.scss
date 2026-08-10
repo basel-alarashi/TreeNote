@@ -1,0 +1,38 @@
+.profile-container {
+  max-width: 500px;
+  margin: 32px auto;
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.profile-card {
+  padding: 8px;
+}
+
+.readonly-field {
+  margin: 4px 0;
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+.info-text {
+  color: #2e7d32;
+  font-size: 0.875rem;
+  margin: 4px 0 12px;
+}
+
+.error-text {
+  color: #d32f2f;
+  font-size: 0.875rem;
+  margin: 4px 0 12px;
+}
+
+.section-divider {
+  margin: 8px 0;
+}

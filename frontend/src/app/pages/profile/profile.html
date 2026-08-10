@@ -1,0 +1,79 @@
+<div class="profile-container">
+  @if (profile(); as user) {
+  <mat-card class="profile-card">
+    <mat-card-header>
+      <mat-card-title>Your Profile</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <p class="readonly-field"><strong>Email:</strong> {{ user.email }}</p>
+      <p class="readonly-field"><strong>Member since:</strong> {{ user.createdAt | date:'mediumDate' }}</p>
+
+      <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Display Name</mat-label>
+          <input matInput formControlName="displayName" />
+          @if (profileForm.controls.displayName.hasError('required')) {
+          <mat-error>Display name is required.</mat-error>
+          }
+        </mat-form-field>
+
+        @if (profileMessage()) {
+        <p class="info-text">{{ profileMessage() }}</p>
+        }
+
+        <button mat-flat-button color="primary" type="submit" [disabled]="isSavingProfile()">
+          Save Changes
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-divider class="section-divider"></mat-divider>
+
+  <mat-card class="profile-card">
+    <mat-card-header>
+      <mat-card-title>Change Password</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Current Password</mat-label>
+          <input matInput type="password" formControlName="currentPassword" autocomplete="current-password" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>New Password</mat-label>
+          <input matInput type="password" formControlName="newPassword" autocomplete="new-password" />
+          @if (passwordForm.controls.newPassword.hasError('minlength')) {
+          <mat-error>Password must be at least 8 characters.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Confirm New Password</mat-label>
+          <input matInput type="password" formControlName="confirmNewPassword" autocomplete="new-password" />
+          @if (passwordForm.controls.confirmNewPassword.hasError('required')) {
+          <mat-error>Please confirm your password.</mat-error>
+          }
+          @if (passwordForm.controls.confirmNewPassword.hasError('passwordsMismatch')) {
+          <mat-error>Passwords do not match.</mat-error>
+          }
+        </mat-form-field>
+
+        @if (passwordMessage()) {
+        <p class="info-text">{{ passwordMessage() }}</p>
+        }
+        @if (passwordError()) {
+        <p class="error-text">{{ passwordError() }}</p>
+        }
+
+        <button mat-flat-button color="primary" type="submit" [disabled]="isSavingPassword()">
+          Change Password
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+  }
+</div>

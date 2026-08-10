@@ -31,6 +31,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, A
         var incomingHash = _tokenService.HashToken(request.RefreshToken);
 
         var stored = await _context.RefreshTokens
+            .AsTracking()
             .FirstOrDefaultAsync(rt => rt.TokenHash == incomingHash, cancellationToken);
 
         if (stored is null)
@@ -39,6 +40,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, A
         if (stored.RevokedAt is not null)
         {
             var activeTokens = await _context.RefreshTokens
+                .AsTracking()
                 .Where(rt => rt.UserId == stored.UserId && rt.RevokedAt == null)
                 .ToListAsync(cancellationToken);
 
