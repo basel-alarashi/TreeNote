@@ -8,7 +8,7 @@ Base URL
 
 ---
 
-## Authentication *(specified, not yet implemented — Sprint 4)*
+## Authentication *(Sprint 4)*
 
 POST
 
@@ -40,7 +40,31 @@ POST
 /auth/logout
 ```
 
-Until Sprint 4, all endpoints below run against a hardcoded mock user (no real authorization checks based on a token) — see `MockCurrentUserService`.
+All endpoints below now require a valid JWT access token (`Authorization: Bearer <token>`) and enforce resource ownership. `MockCurrentUserService` has been removed; `ICurrentUserService` is implemented by reading the `NameIdentifier` claim from the authenticated principal.
+
+---
+
+## User *(added Sprint 4)*
+
+GET
+
+/users/me
+
+Returns the authenticated user's profile.
+
+PUT
+
+/users/me
+
+Body: `{ "displayName": string }`
+
+PUT
+
+/users/change-password
+
+Body: `{ "currentPassword": string, "newPassword": string }`
+
+**Refresh token behavior:** Refresh tokens rotate on every use — calling `/auth/refresh` returns a new refresh token and revokes the old one. Reusing an already-revoked refresh token revokes *all* active refresh tokens for that user (reuse-detection), forcing re-authentication on every device.
 
 ---
 
@@ -229,9 +253,9 @@ GET
 
 400 Bad Request
 
-401 Unauthorized
+401 Unauthorized (invalid/missing credentials)
 
-403 Forbidden
+403 Forbidden (invalid user, wrong resource)
 
 404 Not Found
 

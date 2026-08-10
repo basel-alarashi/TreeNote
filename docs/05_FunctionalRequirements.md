@@ -35,7 +35,7 @@ The system shall allow a guest to create a new account.
 **Acceptance Criteria**
 
 - Email must be unique.
-- Password must satisfy the password policy.
+- Password must: 1. Have at least 1 uppercase letter. 2. Be at least 8 chars length.
 - User profile is created automatically.
 
 ---
@@ -164,6 +164,12 @@ The system shall allow users to configure:
 - Default workspace (future)
 
 Version 1 requires only the infrastructure to support future settings.
+
+---
+
+## FR-013 Display Name *(added Sprint 4)*
+
+The system shall allow authenticated users to set and update a display name, separate from their email address.
 
 ---
 
