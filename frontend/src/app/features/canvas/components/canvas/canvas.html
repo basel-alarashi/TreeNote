@@ -6,6 +6,7 @@
      (mouseup)="onBackgroundMouseUp()"
      (mouseleave)="onBackgroundMouseUp()">
   <div class="toolbar">
+    <app-search-bar (resultSelected)="onSearchResultSelected($event)"></app-search-bar>
     <button mat-icon-button [disabled]="!history.canUndo()" (click)="history.undo()"><mat-icon>undo</mat-icon></button>
     <button mat-icon-button [disabled]="!history.canRedo()" (click)="history.redo()"><mat-icon>redo</mat-icon></button>
     <button mat-icon-button (click)="zoomIn()"><mat-icon>zoom_in</mat-icon></button>

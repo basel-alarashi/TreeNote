@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, inject, input, output, signal, viewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, inject, input, output, signal, viewChild, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -8,15 +8,19 @@ import { SelectionService } from '../../services/selection.service';
 import { HistoryService } from '../../services/history.service';
 import { TopicComponent } from '../../../topic/components/topic/topic';
 import { ConnectorComponent } from '../connector/connector';
+import { SearchBarComponent } from '../search-bar/search-bar';
 import { SelectionBoxComponent, SelectionRect } from '../selection-box/selection-box';
 import { Topic } from '../../../../models/topic.model';
 import { Relationship } from '../../../../models/relationship.model';
 import { TOPIC_WIDTH, TOPIC_HEIGHT } from '../../../../models/canvas-view.constants';
+import { SearchTopicResult } from '../../../../models/search-result.model';
+
+const FOCUS_PADDING = 200;
 
 @Component({
   selector: 'app-canvas',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, MatMenuModule, TopicComponent, ConnectorComponent, SelectionBoxComponent],
+  imports: [CommonModule, MatButtonModule, MatIconModule, MatMenuModule, TopicComponent, ConnectorComponent, SelectionBoxComponent, SearchBarComponent],
   templateUrl: './canvas.html',
   styleUrl: './canvas.scss',
 })
@@ -60,6 +64,72 @@ export class CanvasComponent {
   // Rubber-band selection (Shift + drag on empty canvas)
   private isSelecting = false;
   private selectionStartCanvas = { x: 0, y: 0 };
+
+  // --- Search result focusing ---
+
+  /**
+   * Set by the host page when a search result points at a topic on a
+   * *different* canvas than the one currently open. Once that canvas's
+   * topics are loaded and passed in via `topics()`, this component will
+   * pick up the pending focus automatically (see the effect below).
+   */
+  readonly focusTopicId = input<string | null>(null);
+
+  /** Emitted when a search result belongs to a different canvas — the host page owns switching canvases. */
+  readonly navigateToCanvasRequested = output<{ canvasId: string; topicId: string }>();
+
+  /** Currently highlighted (search-focused) topic, for a temporary visual ring distinct from normal selection. */
+  readonly highlightedTopicId = signal<string | null>(null);
+
+  private lastFocusedTopicId: string | null = null;
+  private highlightTimeout?: ReturnType<typeof setTimeout>;
+
+  constructor() {
+    // Re-attempts focusing whenever the pending topic id or the loaded topic
+    // list changes — this is what lets focusing work after a cross-canvas
+    // switch, once the new canvas's topics() input actually arrives.
+    effect(() => {
+      const id = this.focusTopicId();
+      if (!id || id === this.lastFocusedTopicId) return;
+
+      const topic = this.topicById(id);
+      if (topic) {
+        this.lastFocusedTopicId = id;
+        this.focusTopic(topic);
+      }
+    });
+  }
+
+  /** Bind this to `(resultSelected)` on `<app-search-bar>`. */
+  onSearchResultSelected(result: SearchTopicResult): void {
+    const topic = this.topicById(result.topicId);
+
+    if (!topic) {
+      // Not in the currently loaded canvas — ask the host page to switch canvases.
+      // Once it does and passes the new topics() in, the effect above finishes the job.
+      this.navigateToCanvasRequested.emit({ canvasId: result.canvasId, topicId: result.topicId });
+      return;
+    }
+
+    this.lastFocusedTopicId = result.topicId;
+    this.focusTopic(topic);
+  }
+
+  private focusTopic(topic: Topic): void {
+    this.selection.select(topic.id, false);
+
+    const bounds = {
+      minX: topic.x - FOCUS_PADDING,
+      minY: topic.y - FOCUS_PADDING,
+      maxX: topic.x + TOPIC_WIDTH + FOCUS_PADDING,
+      maxY: topic.y + TOPIC_HEIGHT + FOCUS_PADDING,
+    };
+    this.viewport.fitToScreen(bounds, this.rect());
+
+    this.highlightedTopicId.set(topic.id);
+    clearTimeout(this.highlightTimeout);
+    this.highlightTimeout = setTimeout(() => this.highlightedTopicId.set(null), 2000);
+  }
 
   topicById(id: string): Topic | undefined {
     return this.topics().find((t) => t.id === id);
