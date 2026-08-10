@@ -54,7 +54,10 @@
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Confirm New Password</mat-label>
           <input matInput type="password" formControlName="confirmNewPassword" autocomplete="new-password" />
-          @if (passwordForm.hasError('passwordsMismatch') && passwordForm.controls.confirmNewPassword.dirty) {
+          @if (passwordForm.controls.confirmNewPassword.hasError('required')) {
+          <mat-error>Please confirm your password.</mat-error>
+          }
+          @if (passwordForm.controls.confirmNewPassword.hasError('passwordsMismatch')) {
           <mat-error>Passwords do not match.</mat-error>
           }
         </mat-form-field>

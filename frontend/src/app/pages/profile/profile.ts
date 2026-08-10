@@ -1,6 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,10 +9,12 @@ import { MatDividerModule } from '@angular/material/divider';
 import { ProfileService } from '../../features/profile/profile.service';
 import { UserProfile } from '../../features/profile/profile.models';
 
-function passwordsMatchValidator(control: AbstractControl): ValidationErrors | null {
-  const newPassword = control.get('newPassword')?.value;
-  const confirmPassword = control.get('confirmNewPassword')?.value;
-  return newPassword === confirmPassword ? null : { passwordsMismatch: true };
+function passwordMatchValidator(passwordControlName: string): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const password = control.parent?.get(passwordControlName)?.value;
+    if (password === undefined) return null;
+    return control.value === password ? null : { passwordsMismatch: true };
+  };
 }
 
 @Component({
@@ -54,10 +56,13 @@ export class ProfileComponent implements OnInit {
       {
         currentPassword: ['', [Validators.required]],
         newPassword: ['', [Validators.required, Validators.minLength(8)]],
-        confirmNewPassword: ['', [Validators.required]]
-      },
-      { validators: passwordsMatchValidator }
+        confirmNewPassword: ['', [Validators.required, passwordMatchValidator('newPassword')]]
+      }
     );
+
+    this.passwordForm.controls.newPassword.valueChanges.subscribe(() => {
+      this.passwordForm.controls.confirmNewPassword.updateValueAndValidity({ onlySelf: true });
+    });
   }
 
   ngOnInit(): void {

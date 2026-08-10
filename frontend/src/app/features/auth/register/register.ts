@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -9,10 +9,12 @@ import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../../core/auth/auth.service';
 
-function passwordsMatchValidator(control: AbstractControl): ValidationErrors | null {
-  const password = control.get('password')?.value;
-  const confirmPassword = control.get('confirmPassword')?.value;
-  return password === confirmPassword ? null : { passwordsMismatch: true };
+function passwordMatchValidator(passwordControlName: string): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const password = control.parent?.get(passwordControlName)?.value;
+    if (password === undefined) return null;
+    return control.value === password ? null : { passwordsMismatch: true };
+  };
 }
 
 @Component({
@@ -42,14 +44,15 @@ export class RegisterComponent {
     private readonly authService: AuthService,
     private readonly router: Router
   ) {
-    this.form = this.fb.group(
-      {
-        email: ['', [Validators.required, Validators.email]],
-        password: ['', [Validators.required, Validators.minLength(8)]],
-        confirmPassword: ['', [Validators.required]]
-      },
-      { validators: passwordsMatchValidator }
-    );
+    this.form = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(8)]],
+      confirmPassword: ['', [Validators.required, passwordMatchValidator('password')]]
+    });
+
+    this.form.controls.password.valueChanges.subscribe(() => {
+      this.form.controls.confirmPassword.updateValueAndValidity({ onlySelf: true });
+    });
   }
 
   submit(): void {

@@ -13,6 +13,7 @@ import {
   RefreshTokenRequest,
   RegisterRequest
 } from './auth.models';
+import { SocialAuthService } from '@abacritt/angularx-social-login';
 
 interface JwtPayload {
   sub: string;
@@ -30,7 +31,8 @@ export class AuthService {
   constructor(
     private readonly http: HttpClient,
     private readonly tokenStorage: TokenStorageService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly socialAuthService: SocialAuthService
   ) {
     this.restoreSession();
   }
@@ -73,8 +75,6 @@ export class AuthService {
   logout(): void {
     const refreshToken = this.tokenStorage.getRefreshToken();
 
-    // Fire-and-forget: clear local session immediately regardless of API result,
-    // since the user's intent is to be logged out on this device either way.
     if (refreshToken) {
       this.http
         .post(`${environment.apiUrl}/auth/logout`, { refreshToken })
@@ -83,6 +83,14 @@ export class AuthService {
     }
 
     this.clearSession();
+
+    // Tear down Google's client-side session too — otherwise authState
+    // keeps replaying the last signed-in user, silently re-authenticating
+    // the moment /login re-subscribes to it.
+    this.socialAuthService.signOut().catch(() => {
+      // No-op: throws if the user never had a Google session this visit.
+    });
+
     this.router.navigate(['/login']);
   }
 

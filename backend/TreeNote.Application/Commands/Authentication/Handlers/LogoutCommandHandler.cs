@@ -20,6 +20,7 @@ public class LogoutCommandHandler : IRequestHandler<LogoutCommand>
         var hash = _tokenService.HashToken(request.RefreshToken);
 
         var stored = await _context.RefreshTokens
+            .AsTracking()
             .FirstOrDefaultAsync(rt => rt.TokenHash == hash, cancellationToken);
 
         if (stored is not null && stored.RevokedAt is null)
