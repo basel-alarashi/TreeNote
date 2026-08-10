@@ -11,6 +11,7 @@ using TreeNote.Infrastructure.Identity;
 using TreeNote.Infrastructure.Extensions;
 using TreeNote.Infrastructure.Authentication;
 using TreeNote.Application.Interfaces;
+using TreeNote.Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -94,6 +95,7 @@ builder.Services.Configure<GoogleSettings>(
     builder.Configuration.GetSection(GoogleSettings.SectionName));
 
 builder.Services.AddScoped<IGoogleAuthService, GoogleAuthService>();
+builder.Services.AddScoped<ISearchService, SearchService>();
 
 builder.Services.AddMediatR(cfg => {
     cfg.RegisterServicesFromAssembly(typeof(TreeNote.Application.Commands.Register.RegisterCommand).Assembly);
