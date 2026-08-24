@@ -1,0 +1,27 @@
+<div class="export-menu">
+  <button type="button"
+          class="export-menu__trigger"
+          (click)="toggleMenu()"
+          [disabled]="isExporting()"
+          aria-haspopup="true">
+    @if (isExporting()) {
+    Exporting…
+    } @else {
+    Export
+    }
+  </button>
+
+  @if (isOpen()) {
+  <ul class="export-menu__options">
+    <li (click)="exportPng()">Export as PNG</li>
+    <li (click)="exportPdf()">Export as PDF</li>
+  </ul>
+  }
+
+  @if (errorMessage()) {
+  <div class="export-menu__error">{{ errorMessage() }}</div>
+  }
+  @if (infoMessage()) {
+  <div class="export-menu__info">{{ infoMessage() }}</div>
+  }
+</div>
