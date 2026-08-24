@@ -6,7 +6,8 @@
 }
 
 <div class="canvas-viewport">
-  <app-canvas [topics]="c.topics"
+  <app-canvas [name]="c.name"
+              [topics]="c.topics"
               [relationships]="c.relationships"
               (positionsChanged)="onPositionsChanged($event)"
               (dragEnded)="onDragEnded($event)"
