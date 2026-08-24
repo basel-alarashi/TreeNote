@@ -7,6 +7,7 @@
      (mouseleave)="onBackgroundMouseUp()">
   <div class="toolbar">
     <app-search-bar (resultSelected)="onSearchResultSelected($event)"></app-search-bar>
+    <app-export-menu [svgElement]="svgElement!" [canvasName]="name()"></app-export-menu>
     <button mat-icon-button [disabled]="!history.canUndo()" (click)="history.undo()"><mat-icon>undo</mat-icon></button>
     <button mat-icon-button [disabled]="!history.canRedo()" (click)="history.redo()"><mat-icon>redo</mat-icon></button>
     <button mat-icon-button (click)="zoomIn()"><mat-icon>zoom_in</mat-icon></button>
@@ -14,8 +15,8 @@
     <button mat-icon-button (click)="resetView()"><mat-icon>center_focus_strong</mat-icon></button>
     <button mat-icon-button (click)="fitToScreen()"><mat-icon>fit_screen</mat-icon></button>
   </div>
-
-  <svg class="canvas-svg">
+  
+  <svg class="canvas-svg" #canvasSvg>
     <g [attr.transform]="viewport.transform()">
       @for (rel of relationships(); track rel.parentId + rel.childId) {
       <svg:path appConnector [parent]="topicById(rel.parentId)" [child]="topicById(rel.childId)"></svg:path>

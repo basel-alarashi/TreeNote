@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, inject, input, output, signal, viewChild, effect } from '@angular/core';
+import { Component, ElementRef, HostListener, inject, input, output, signal, viewChild, effect, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,6 +9,7 @@ import { HistoryService } from '../../services/history.service';
 import { TopicComponent } from '../../../topic/components/topic/topic';
 import { ConnectorComponent } from '../connector/connector';
 import { SearchBarComponent } from '../search-bar/search-bar';
+import { ExportMenuComponent } from '../export-menu/export-menu';
 import { SelectionBoxComponent, SelectionRect } from '../selection-box/selection-box';
 import { Topic } from '../../../../models/topic.model';
 import { Relationship } from '../../../../models/relationship.model';
@@ -20,11 +21,23 @@ const FOCUS_PADDING = 200;
 @Component({
   selector: 'app-canvas',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, MatMenuModule, TopicComponent, ConnectorComponent, SelectionBoxComponent, SearchBarComponent],
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatIconModule,
+    MatMenuModule,
+    TopicComponent,
+    ConnectorComponent,
+    SelectionBoxComponent,
+    SearchBarComponent,
+    ExportMenuComponent
+  ],
   templateUrl: './canvas.html',
   styleUrl: './canvas.scss',
 })
 export class CanvasComponent {
+  readonly svgRef = viewChild<ElementRef<SVGSVGElement>>('canvasSvg');
+  readonly name = input.required<string>();
   readonly topics = input.required<Topic[]>();
   readonly relationships = input.required<Relationship[]>();
 
@@ -98,6 +111,10 @@ export class CanvasComponent {
         this.focusTopic(topic);
       }
     });
+  }
+
+  get svgElement(): SVGSVGElement | undefined {
+    return this.svgRef()?.nativeElement;
   }
 
   /** Bind this to `(resultSelected)` on `<app-search-bar>`. */
