@@ -9,11 +9,15 @@ import { CanvasService } from '../../features/canvas/services/canvas.service';
 import { TopicService } from '../../features/topic/services/topic.service';
 import { RelationshipService } from '../../features/topic/services/relationship.service';
 import { HistoryService } from '../../features/canvas/services/history.service';
+import { AuthService } from '../../core/auth/auth.service';
+import { OfflineStorageService } from '../../services/offline-storage.service';
+import { ConnectivityService } from '../../services/connectivity.service';
 import { TopicItemComponent } from '../../features/topic/components/topic-item/topic-item';
 import { CanvasComponent } from '../../features/canvas/components/canvas/canvas';
 import { CanvasDetail } from '../../models/canvas.model';
 import { CreateTopicCommand, Topic } from '../../models/topic.model';
 import { Relationship } from '../../models/relationship.model';
+import { CachedCanvas } from '../../models/offline-canvas.model';
 import { forkJoin, concatMap, from, toArray, finalize, Observable } from 'rxjs';
 
 @Component({
@@ -29,6 +33,9 @@ export class CanvasDetailComponent implements OnInit {
   private readonly topicService = inject(TopicService);
   private readonly relationshipService = inject(RelationshipService);
   private readonly history = inject(HistoryService);
+  private readonly offlineStorage = inject(OfflineStorageService);
+  private readonly connectivity = inject(ConnectivityService);
+  private readonly authService = inject(AuthService);
 
   readonly canvasId = signal('');
   readonly canvas = signal<CanvasDetail | null>(null);
@@ -50,7 +57,43 @@ export class CanvasDetailComponent implements OnInit {
   }
 
   load(): void {
-    this.canvasService.getById(this.canvasId()).subscribe((data) => this.canvas.set(data));
+    if (this.connectivity.isOnline()) {
+      this.canvasService.getById(this.canvasId()).subscribe((data) => {
+        const { id: canvasId, workspaceId, name, createdAt, topics, relationships } = data;
+        const lastSyncedAt = new Date().toISOString();
+        const userId = this.authService.getCurrentUserId()!;
+        const cachedCanvas: CachedCanvas = {
+          meta: {
+            userId,
+            workspaceId,
+            canvasId,
+            name,
+            createdAt,
+            lastSyncedAt
+          },
+          topics,
+          relationships: relationships.map((r) => ({
+            ...r,
+            id: `${r.parentId}::${r.childId}`,
+            canvasId
+          }))
+        };
+        this.canvas.set(data);
+        this.offlineStorage.cacheCanvas(cachedCanvas);
+      });
+    } else {
+      this.offlineStorage.getCachedCanvas(this.canvasId()).then((cachedData) => {
+        const { meta: { workspaceId, name, canvasId: id, createdAt }, topics, relationships } = cachedData!;
+        this.canvas.set({
+          workspaceId,
+          id,
+          name,
+          createdAt,
+          topics,
+          relationships
+        });
+      });
+    }
   }
 
   addRoot(): void {

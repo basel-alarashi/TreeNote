@@ -1,0 +1,27 @@
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--tn-text-secondary, #666);
+
+  &__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--tn-danger, #c0392b);
+
+    &--online {
+      background: var(--tn-success, #2ecc71);
+    }
+  }
+
+  &--offline &__label {
+    color: var(--tn-danger, #c0392b);
+    font-weight: 600;
+  }
+
+  &__sync-time {
+    opacity: 0.75;
+  }
+}

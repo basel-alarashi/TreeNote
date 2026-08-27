@@ -6,9 +6,11 @@ import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
 import { ViewportService } from '../../services/viewport.service';
 import { SelectionService } from '../../services/selection.service';
 import { HistoryService } from '../../services/history.service';
+import { OfflineStorageService } from '../../../../services/offline-storage.service';
 import { TopicComponent } from '../../../topic/components/topic/topic';
 import { ConnectorComponent } from '../connector/connector';
 import { SearchBarComponent } from '../search-bar/search-bar';
+import { ConnectionStatusBadgeComponent } from '../connection-status-badge/connection-status-badge';
 import { ExportMenuComponent } from '../export-menu/export-menu';
 import { SelectionBoxComponent, SelectionRect } from '../selection-box/selection-box';
 import { Topic } from '../../../../models/topic.model';
@@ -30,6 +32,7 @@ const FOCUS_PADDING = 200;
     ConnectorComponent,
     SelectionBoxComponent,
     SearchBarComponent,
+    ConnectionStatusBadgeComponent,
     ExportMenuComponent
   ],
   templateUrl: './canvas.html',
@@ -40,6 +43,7 @@ export class CanvasComponent {
   readonly name = input.required<string>();
   readonly topics = input.required<Topic[]>();
   readonly relationships = input.required<Relationship[]>();
+  readonly lastSyncedAt = signal<string | null>(null);
 
   readonly positionsChanged = output<{ id: string; x: number; y: number }[]>();
   readonly dragEnded = output<{ id: string; fromX: number; fromY: number; toX: number; toY: number }[]>();
@@ -47,6 +51,7 @@ export class CanvasComponent {
   readonly viewport = inject(ViewportService);
   readonly selection = inject(SelectionService);
   readonly history = inject(HistoryService);
+  readonly offlineStorage = inject(OfflineStorageService);
   readonly selectionBoxRect = signal<SelectionRect | null>(null);
 
   readonly menuTrigger = viewChild.required<MatMenuTrigger>('menuTrigger');
@@ -110,6 +115,10 @@ export class CanvasComponent {
         this.lastFocusedTopicId = id;
         this.focusTopic(topic);
       }
+
+      this.offlineStorage.getCachedCanvas(this.name()).then((canvas) => {
+        this.lastSyncedAt.set(canvas?.meta.lastSyncedAt ?? null);
+      });
     });
   }
 
