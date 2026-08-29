@@ -75,6 +75,7 @@ export class AuthService {
   }
 
   logout(): void {
+    console.log('Log out Called.');
     const refreshToken = this.tokenStorage.getRefreshToken();
 
     if (refreshToken) {

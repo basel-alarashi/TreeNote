@@ -4,7 +4,7 @@ export interface Topic {
   title: string;
   x: number;
   y: number;
-  emoji: string | null;
+  emoji?: string | null;
   createdAt: string;
   rowVersion: string; // base64, opaque — just echo it back on updates
 }

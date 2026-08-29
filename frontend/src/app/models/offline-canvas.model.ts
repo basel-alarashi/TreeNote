@@ -4,7 +4,7 @@ export interface OfflineTopic {
   title: string;
   x: number;
   y: number;
-  emoji: string | null;
+  emoji?: string | null;
   createdAt: string;
   rowVersion: string;
 }

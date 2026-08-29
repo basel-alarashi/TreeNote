@@ -49,6 +49,7 @@ export class OfflineStorageService {
 
   /** Call from your logout flow — Security Requirements: never leave one user's cache for the next. */
   async clearAllLocalData(): Promise<void> {
+    console.log('Clearing all local IndexedDB data for logout...');
     await this.db.clearAll();
   }
 
