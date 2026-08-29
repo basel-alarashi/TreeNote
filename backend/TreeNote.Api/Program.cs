@@ -59,6 +59,7 @@ builder.Services.AddScoped<IJwtSettingsAccessor, JwtSettingsAccessor>();
 
 builder.Services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
 builder.Services.AddScoped<IIdentityService, IdentityService>();
+builder.Services.AddScoped<ISyncService, SyncService>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
