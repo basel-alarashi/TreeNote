@@ -1,5 +1,5 @@
-import { Topic } from './topic.model';
-import { Relationship } from './relationship.model';
+import { Topic } from '../topic.model';
+import { Relationship } from '../relationship.model';
 
 export interface Canvas {
   id: string;

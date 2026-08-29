@@ -15,8 +15,8 @@ import { ExportMenuComponent } from '../export-menu/export-menu';
 import { SelectionBoxComponent, SelectionRect } from '../selection-box/selection-box';
 import { Topic } from '../../../models/topic.model';
 import { Relationship } from '../../../models/relationship.model';
-import { TOPIC_WIDTH, TOPIC_HEIGHT } from '../../../models/canvas-view.constants';
-import { SearchTopicResult } from '../../../models/search-result.model';
+import { TOPIC_WIDTH, TOPIC_HEIGHT } from '../../../models/canvas/canvas-view.constants';
+import { SearchTopicResult } from '../../../models/canvas/search-result.model';
 
 const FOCUS_PADDING = 200;
 

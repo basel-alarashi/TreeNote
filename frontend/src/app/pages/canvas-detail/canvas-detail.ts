@@ -14,10 +14,10 @@ import { OfflineStorageService } from '../../services/offline/offline-storage.se
 import { ConnectivityService } from '../../services/offline/connectivity.service';
 import { TopicItemComponent } from '../../features/topic/topic-item/topic-item';
 import { CanvasComponent } from '../../features/canvas/canvas/canvas';
-import { CanvasDetail } from '../../models/canvas.model';
+import { CanvasDetail } from '../../models/canvas/canvas.model';
 import { CreateTopicCommand, Topic } from '../../models/topic.model';
 import { Relationship } from '../../models/relationship.model';
-import { CachedCanvas } from '../../models/offline-canvas.model';
+import { CachedCanvas } from '../../models/offline/offline-canvas.model';
 import { forkJoin, concatMap, from, toArray, finalize, Observable } from 'rxjs';
 
 @Component({

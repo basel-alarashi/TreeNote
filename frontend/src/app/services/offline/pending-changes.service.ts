@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { OfflineDbService } from './offline-db.service';
-import { STORE_PENDING_CHANGES } from '../../models/offline-db.constants';
-import { PendingChange, PendingChangeStatus, PendingChangeEntityType, PendingChangeOperation } from '../../models/pending-change.model';
+import { STORE_PENDING_CHANGES } from '../../models/offline/offline-db.constants';
+import { PendingChange, PendingChangeStatus, PendingChangeEntityType, PendingChangeOperation } from '../../models/offline/pending-change.model';
 
 /** The one place that reads/writes the pendingChanges queue — Stage F's SyncService consumes it, Stage E's OfflineEditingService produces it. */
 @Injectable({ providedIn: 'root' })

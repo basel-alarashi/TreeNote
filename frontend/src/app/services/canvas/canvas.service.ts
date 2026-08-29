@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Canvas, CanvasDetail, CreateCanvasCommand, UpdateCanvasCommand } from '../../models/canvas.model';
+import { Canvas, CanvasDetail, CreateCanvasCommand, UpdateCanvasCommand } from '../../models/canvas/canvas.model';
 
 @Injectable({ providedIn: 'root' })
 export class CanvasService {

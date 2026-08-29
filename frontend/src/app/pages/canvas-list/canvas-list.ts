@@ -8,7 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { CanvasService } from '../../services/canvas/canvas.service';
-import { Canvas } from '../../models/canvas.model';
+import { Canvas } from '../../models/canvas/canvas.model';
 
 @Component({
   selector: 'app-canvas-list',

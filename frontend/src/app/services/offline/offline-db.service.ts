@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { DB_NAME, DB_VERSION, STORE_CANVASES, STORE_PENDING_CHANGES, STORE_RELATIONSHIPS, STORE_TOPICS } from '../../models/offline-db.constants';
+import { DB_NAME, DB_VERSION, STORE_CANVASES, STORE_PENDING_CHANGES, STORE_RELATIONSHIPS, STORE_TOPICS } from '../../models/offline/offline-db.constants';
 
 /** Thin, generic wrapper over the native IndexedDB API — no external dependency. */
 @Injectable({ providedIn: 'root' })

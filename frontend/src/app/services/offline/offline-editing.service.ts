@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { OfflineDbService } from './offline-db.service';
-import { STORE_RELATIONSHIPS, STORE_TOPICS } from '../../models/offline-db.constants';
+import { STORE_RELATIONSHIPS, STORE_TOPICS } from '../../models/offline/offline-db.constants';
 import { PendingChangesService } from './pending-changes.service';
-import { OfflineRelationship, OfflineTopic } from '../../models/offline-canvas.model';
+import { OfflineRelationship, OfflineTopic } from '../../models/offline/offline-canvas.model';
 import { Topic, TopicPositionUpdate } from '../../models/topic.model';
 import { Relationship } from '../../models/relationship.model';
 
