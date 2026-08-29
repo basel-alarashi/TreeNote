@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, input } from '@angular/core';
-import { ConnectivityService } from '../../../../services/connectivity.service';
+import { ConnectivityService } from '../../../services/offline/connectivity.service';
 
 @Component({
   selector: 'app-connection-status-badge',

@@ -1,6 +1,6 @@
 import { Component, HostBinding, input } from '@angular/core';
-import { Topic } from '../../../../models/topic.model';
-import { TOPIC_WIDTH, TOPIC_HEIGHT } from '../../../../models/canvas-view.constants';
+import { Topic } from '../../../models/topic.model';
+import { TOPIC_WIDTH, TOPIC_HEIGHT } from '../../../models/canvas-view.constants';
 
 @Component({
   selector: '[appTopic]',

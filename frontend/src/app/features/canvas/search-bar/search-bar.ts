@@ -2,8 +2,8 @@ import { FormsModule } from '@angular/forms';
 import { Component, EventEmitter, Output, inject, signal } from '@angular/core';
 import { Subject, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
-import { SearchTopicResult } from '../../../../models/search-result.model';
-import { SearchService } from '../../services/search.service';
+import { SearchTopicResult } from '../../../models/search-result.model';
+import { SearchService } from '../../../services/canvas/search.service';
 
 @Component({
   selector: 'app-search-bar',

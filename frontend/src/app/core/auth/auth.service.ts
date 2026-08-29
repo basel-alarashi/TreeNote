@@ -14,7 +14,7 @@ import {
   RegisterRequest
 } from './auth.models';
 import { SocialAuthService } from '@abacritt/angularx-social-login';
-import { OfflineStorageService } from '../../services/offline-storage.service';
+import { OfflineStorageService } from '../../services/offline/offline-storage.service';
 
 interface JwtPayload {
   sub: string;

@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { OfflineDbService } from './offline-db.service';
-import { STORE_CANVASES, STORE_RELATIONSHIPS, STORE_TOPICS } from '../models/offline-db.constants';
-import { CachedCanvas, OfflineCanvasMeta, OfflineRelationship, OfflineTopic } from '../models/offline-canvas.model';
+import { STORE_CANVASES, STORE_RELATIONSHIPS, STORE_TOPICS } from '../../models/offline-db.constants';
+import { CachedCanvas, OfflineCanvasMeta, OfflineRelationship, OfflineTopic } from '../../models/offline-canvas.model';
 
 @Injectable({ providedIn: 'root' })
 export class OfflineStorageService {

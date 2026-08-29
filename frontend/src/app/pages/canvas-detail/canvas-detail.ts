@@ -5,15 +5,15 @@ import { ActivatedRoute } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { CanvasService } from '../../features/canvas/services/canvas.service';
-import { TopicService } from '../../features/topic/services/topic.service';
-import { RelationshipService } from '../../features/topic/services/relationship.service';
-import { HistoryService } from '../../features/canvas/services/history.service';
+import { CanvasService } from '../../services/canvas/canvas.service';
+import { TopicService } from '../../services/topic/topic.service';
+import { RelationshipService } from '../../services/topic/relationship.service';
+import { HistoryService } from '../../services/canvas/history.service';
 import { AuthService } from '../../core/auth/auth.service';
-import { OfflineStorageService } from '../../services/offline-storage.service';
-import { ConnectivityService } from '../../services/connectivity.service';
-import { TopicItemComponent } from '../../features/topic/components/topic-item/topic-item';
-import { CanvasComponent } from '../../features/canvas/components/canvas/canvas';
+import { OfflineStorageService } from '../../services/offline/offline-storage.service';
+import { ConnectivityService } from '../../services/offline/connectivity.service';
+import { TopicItemComponent } from '../../features/topic/topic-item/topic-item';
+import { CanvasComponent } from '../../features/canvas/canvas/canvas';
 import { CanvasDetail } from '../../models/canvas.model';
 import { CreateTopicCommand, Topic } from '../../models/topic.model';
 import { Relationship } from '../../models/relationship.model';
@@ -72,7 +72,7 @@ export class CanvasDetailComponent implements OnInit {
             lastSyncedAt
           },
           topics,
-          relationships: relationships.map((r) => ({
+          relationships: relationships.map((r: Relationship) => ({
             ...r,
             id: `${r.parentId}::${r.childId}`,
             canvasId

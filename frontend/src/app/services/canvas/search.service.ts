@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { environment } from '../../../../environments/environment';
-import { SearchTopicResult } from '../../../models/search-result.model';
+import { environment } from '../../../environments/environment';
+import { SearchTopicResult } from '../../models/search-result.model';
 
 @Injectable({ providedIn: 'root' })
 export class SearchService {

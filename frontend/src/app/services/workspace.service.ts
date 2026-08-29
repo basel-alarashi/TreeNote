@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { environment } from '../../../../environments/environment';
-import { Workspace, CreateWorkspaceCommand, UpdateWorkspaceCommand } from '../../../models/workspace.model';
+import { environment } from '../../environments/environment';
+import { Workspace, CreateWorkspaceCommand, UpdateWorkspaceCommand } from '../models/workspace.model';
 
 @Injectable({ providedIn: 'root' })
 export class WorkspaceService {

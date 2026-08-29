@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
-import { ChangePasswordRequest, UpdateProfileRequest, UserProfile } from './profile.models';
+import { environment } from '../../environments/environment';
+import { ChangePasswordRequest, UpdateProfileRequest, UserProfile } from '../models/profile.models';
 
 @Injectable({ providedIn: 'root' })
 export class ProfileService {

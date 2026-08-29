@@ -7,7 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { CanvasService } from '../../features/canvas/services/canvas.service';
+import { CanvasService } from '../../services/canvas/canvas.service';
 import { Canvas } from '../../models/canvas.model';
 
 @Component({

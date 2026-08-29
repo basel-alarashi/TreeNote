@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import jsPDF from 'jspdf';
-import { ContentBounds, ExportOptions } from '../../../models/export-options.model';
+import { ContentBounds, ExportOptions } from '../../models/export-options.model';
 
 const STYLE_PROPERTIES = [
   'fill',

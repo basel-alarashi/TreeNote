@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { environment } from '../../../../environments/environment';
-import { Relationship } from '../../../models/relationship.model';
+import { environment } from '../../../environments/environment';
+import { Relationship } from '../../models/relationship.model';
 
 @Injectable({ providedIn: 'root' })
 export class RelationshipService {

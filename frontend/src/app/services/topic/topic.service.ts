@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { environment } from '../../../../environments/environment';
-import { Topic, CreateTopicCommand, UpdateTopicCommand, TopicPositionUpdate } from '../../../models/topic.model';
+import { environment } from '../../../environments/environment';
+import { Topic, CreateTopicCommand, UpdateTopicCommand, TopicPositionUpdate } from '../../models/topic.model';
 
 @Injectable({ providedIn: 'root' })
 export class TopicService {

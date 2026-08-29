@@ -1,5 +1,5 @@
 import { Component, Input, signal, inject } from '@angular/core';
-import { ExportService } from '../../services/export.service';
+import { ExportService } from '../../../services/canvas/export.service';
 
 @Component({
   selector: 'app-export-menu',

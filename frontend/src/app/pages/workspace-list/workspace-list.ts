@@ -7,7 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { WorkspaceService } from '../../features/workspace/services/workspace.service';
+import { WorkspaceService } from '../../services/workspace.service';
 import { Workspace } from '../../models/workspace.model';
 
 @Component({
