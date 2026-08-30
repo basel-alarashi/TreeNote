@@ -6,8 +6,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
-import { ProfileService } from '../../features/profile/profile.service';
-import { UserProfile } from '../../features/profile/profile.models';
+import { ProfileService } from '../../services/profile.service';
+import { UserProfile } from '../../models/profile.models';
 
 function passwordMatchValidator(passwordControlName: string): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {

@@ -1,0 +1,40 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.canvas-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  cursor: grab;
+}
+
+.canvas-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: #fafafa;
+}
+
+.toolbar {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.context-menu-anchor {
+  position: fixed;
+  width: 0;
+  height: 0;
+}

@@ -146,3 +146,18 @@ Relationships
 A topic does NOT contain ParentId. Relationships are stored separately to support graphs.
 
 `ApplicationUser` (Infrastructure/Identity) is never referenced by Domain entities — `Workspace.UserId` is a plain `Guid`; the FK to `AspNetUsers` is configured entirely inside `ApplicationDbContext`, keeping the Domain layer framework-agnostic.
+
+---
+
+## Client-Side Offline Storage *(added Sprint 5)*
+
+Offline support uses the browser's native IndexedDB (`TreeNoteDB`), not a server-side schema change. Stores:
+
+| Store | Key | Notes |
+|-------|-----|-------|
+| canvases | canvasId | Cached canvas metadata + `lastSyncedAt` |
+| topics | id | Indexed by `canvasId` |
+| relationships | id (synthetic `${parentId}::${childId}`) | Indexed by `canvasId` — Relationship's real identity is the pair, but IndexedDB requires a single keyPath |
+| pendingChanges | id | Queued offline operations (`entityType`, `entityId`, `operationType`, `payload`, `status`, `retryCount`); indexed by `status`; drained by `POST /sync` |
+
+All stores are cleared on logout (Security Requirements: never retain one user's cached data for the next).

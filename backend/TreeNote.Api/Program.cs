@@ -22,7 +22,11 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 builder.Host.UseSerilog();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -59,6 +63,7 @@ builder.Services.AddScoped<IJwtSettingsAccessor, JwtSettingsAccessor>();
 
 builder.Services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
 builder.Services.AddScoped<IIdentityService, IdentityService>();
+builder.Services.AddScoped<ISyncService, SyncService>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
@@ -97,9 +102,7 @@ builder.Services.Configure<GoogleSettings>(
 builder.Services.AddScoped<IGoogleAuthService, GoogleAuthService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
 
-builder.Services.AddMediatR(cfg => {
-    cfg.RegisterServicesFromAssembly(typeof(TreeNote.Application.Commands.Register.RegisterCommand).Assembly);
-});
+builder.Services.AddMediatR(typeof(TreeNote.Application.Commands.Register.RegisterCommand).Assembly);
 
 var app = builder.Build();
 

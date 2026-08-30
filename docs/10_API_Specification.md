@@ -215,14 +215,26 @@ Body: `{ "parentId": guid, "childId": guid }` — note this is a body on a DELET
 
 ---
 
-## Search
+## Search *(added Sprint 5)*
 
 GET
 
 ```
-/search?query=
+/search/topics?query={query}
 ```
-*(not yet implemented — Sprint 5)*
+
+Response:
+```json
+[
+  {
+    "topicId": "...",
+    "canvasId": "...",
+    "canvasName": "...",
+    "title": "...",
+    "emoji": "..."
+  }
+]
+```
 
 ---
 
@@ -239,7 +251,37 @@ GET
 ```
 /export/pdf
 ```
-*(not yet implemented — Sprint 5)*
+
+*(Sprint 5 — implemented client-side instead: the canvas SVG is rasterized and downloaded directly in the browser via `ExportService`. No backend endpoints were added; these two routes are not implemented server-side.)*
+
+---
+
+## Synchronization *(added Sprint 5)*
+
+POST
+
+```
+/sync
+```
+Body:
+```json
+{
+  "changes": [
+    { "entityType": "Topic" | "Relationship", "entityId": "...", "operation": "Create" | "Update" | "Delete", "payload": {} }
+  ]
+}
+```
+Applies queued offline changes in request order. Idempotent: a retried `Create`/`Delete` for an already-applied change returns `Success` rather than erroring or duplicating. `Topic` updates use `RowVersion` for optimistic concurrency; a stale version returns a `Conflict` result carrying the server's current copy instead of overwriting it.
+
+Response:
+```json
+{
+  "results": [
+    { "entityId": "...", "entityType": "...", "operation": "...", "status": "Success" | "Failed" | "Conflict", "message": "...", "updatedEntity": {} }
+  ]
+}
+```
+`updatedEntity` (Topic changes only) is a flat DTO (`id, canvasId, title, x, y, emoji, createdAt, rowVersion`) — deliberately not the EF entity, which has bidirectional relationship navigation properties that produce a serialization cycle.
 
 ---
 

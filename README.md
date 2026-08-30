@@ -132,9 +132,9 @@ TreeNote/
 | Sprint 1 | Infrastructure & Application Foundation | ✅ Done |
 | Sprint 2 | Core Domain (Workspace, Canvas, Topics & Relationships) | ✅ Done |
 | Sprint 3 | Visual Canvas Editor | ✅ Done |
-| Sprint 4 | Authentication & User Management | ✅ Done |
-| Sprint 5 | Search, Export & Offline Support | 🚧 In Progress |
-| Sprint 6 | Performance, Deployment & Final Polish | ⬜ Planned |
+| Sprint 4 | Authentication & User Management |  |
+| Sprint 5 | Search, Export & Offline Support | ✅ Done |
+| Sprint 6 | Performance, Deployment & Final Polish | 🚧 In Progress |
 
 ---
 
@@ -180,11 +180,11 @@ Each sprint includes:
 
 # 📈 Current Status
 
-**Current Version:** `v0.3.0`
+**Current Version:** `v0.5.0`
 
-**Current Sprint:** `Sprint 4`
+**Current Sprint:** `Sprint 6`
 
-**Status:** 🚧 In Development — Authentication (JWT + refresh token rotation + Google OAuth), authorization/ownership enforcement, and user profile management are complete. Search, Export, and Offline support are next.
+**Status:** 🚧 In Development — Authentication, Workspace, Canvas/Topic/Relationship CRUD, the visual editor, search, PNG/PDF export, and offline support with sync are all functional. Performance, deployment, and final polish remain.
 
 ---
 

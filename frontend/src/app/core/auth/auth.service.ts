@@ -14,6 +14,7 @@ import {
   RegisterRequest
 } from './auth.models';
 import { SocialAuthService } from '@abacritt/angularx-social-login';
+import { OfflineStorageService } from '../../services/offline/offline-storage.service';
 
 interface JwtPayload {
   sub: string;
@@ -31,6 +32,7 @@ export class AuthService {
   constructor(
     private readonly http: HttpClient,
     private readonly tokenStorage: TokenStorageService,
+    private readonly offlineStorage: OfflineStorageService,
     private readonly router: Router,
     private readonly socialAuthService: SocialAuthService
   ) {
@@ -73,6 +75,7 @@ export class AuthService {
   }
 
   logout(): void {
+    console.log('Log out Called.');
     const refreshToken = this.tokenStorage.getRefreshToken();
 
     if (refreshToken) {
@@ -91,11 +94,17 @@ export class AuthService {
       // No-op: throws if the user never had a Google session this visit.
     });
 
+    this.offlineStorage.clearAllLocalData();
+
     this.router.navigate(['/login']);
   }
 
   getAccessToken(): string | null {
     return this.tokenStorage.getAccessToken();
+  }
+
+  getCurrentUserId(): string | null {
+    return this.currentUser()?.userId ?? null;
   }
 
   /** Restores session on app startup from a persisted refresh token. */
