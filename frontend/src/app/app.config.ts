@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, importProvidersFrom, InjectionToken } from '@angular/core';
+import { ApplicationConfig, provideBrowserGlobalErrorListeners, importProvidersFrom, provideAppInitializer, inject } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { errorInterceptor } from './core/http/error.interceptor';
@@ -10,7 +10,7 @@ import {
   GoogleLoginProvider
 } from '@abacritt/angularx-social-login';
 import { environment } from '../environments/environment';
-
+import { SyncService } from './services/offline/sync.service';
 import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
@@ -20,6 +20,9 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptors([errorInterceptor])),
     provideHttpClient(withInterceptors([authInterceptor])),
     importProvidersFrom(SocialLoginModule),
+    provideAppInitializer(() => {
+      inject(SyncService);
+    }),
     {
       provide: SOCIAL_AUTH_CONFIG,
       useValue: {

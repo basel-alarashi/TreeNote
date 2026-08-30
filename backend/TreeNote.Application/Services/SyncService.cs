@@ -84,7 +84,7 @@ public sealed class SyncService : ISyncService
 
                     _context.Topics.Add(topic);
                     await _context.SaveChangesAsync(cancellationToken);
-                    return Success(change, topic);
+                    return Success(change, ToDto(topic));
                 }
 
             case "Update":
@@ -107,7 +107,7 @@ public sealed class SyncService : ISyncService
                     // Relies on Topic.RowVersion as an EF concurrency token (added Sprint 3) to throw
                     // DbUpdateConcurrencyException on a stale write, caught by the wrapper above.
                     await _context.SaveChangesAsync(cancellationToken);
-                    return Success(change, topic);
+                    return Success(change, ToDto(topic));
                 }
 
             case "Delete":
@@ -215,7 +215,8 @@ public sealed class SyncService : ISyncService
         object? latest = null;
         if (change.EntityType == "Topic" && Guid.TryParse(change.EntityId, out var id))
         {
-            latest = await _context.Topics.AsNoTracking().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+            var topic = await _context.Topics.AsNoTracking().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+            latest = topic is null ? null : ToDto(topic);
         }
 
         return new SyncChangeResultDto
@@ -234,4 +235,16 @@ public sealed class SyncService : ISyncService
 
     private static SyncChangeResultDto Failed(SyncChangeDto c, string message) => new()
     { EntityId = c.EntityId, EntityType = c.EntityType, Operation = c.Operation, Status = "Failed", Message = message };
+
+    private static TopicSyncDto ToDto(Topic topic) => new()
+    {
+        Id = topic.Id,
+        CanvasId = topic.CanvasId,
+        Title = topic.Title,
+        X = topic.X,
+        Y = topic.Y,
+        Emoji = topic.Emoji,
+        CreatedAt = topic.CreatedAt,
+        RowVersion = topic.RowVersion is null ? string.Empty : Convert.ToBase64String(topic.RowVersion)
+    };
 }

@@ -69,4 +69,26 @@ export class PendingChangesService {
     const all = await this.getAllPending();
     this.pendingCount.set(all.length);
   }
+
+  /** Unlike getAllPending(), does NOT exclude 'Syncing' — used only for stuck-item recovery. */
+  async getByStatus(status: PendingChange['status']): Promise<PendingChange[]> {
+    const all = await this.db.getAll<PendingChange>(STORE_PENDING_CHANGES);
+    return all.filter((c) => c.status === status);
+  }
+
+  /**
+   * Demotes any item still marked 'Syncing' back to 'Pending'. Guards against
+   * two ways a change can get stuck there forever: a network-level failure
+   * whose recovery code queried the wrong (already-filtered) list, or the
+   * tab being closed/refreshed mid-request.
+   */
+  async recoverStaleSyncingChanges(): Promise<void> {
+    const stuck = await this.getByStatus('Syncing');
+    for (const change of stuck) {
+      await this.db.put(STORE_PENDING_CHANGES, { ...change, status: 'Pending' as const });
+    }
+    if (stuck.length > 0) {
+      await this.refreshCount();
+    }
+  }
 }

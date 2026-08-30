@@ -32,6 +32,8 @@ export class SyncService {
   private wasOffline = !this.connectivity.isOnline();
 
   constructor() {
+    this.pendingChanges.recoverStaleSyncingChanges();
+
     effect(() => {
       const online = this.connectivity.isOnline();
       if (online && this.wasOffline) {
@@ -39,6 +41,10 @@ export class SyncService {
       }
       this.wasOffline = !online;
     });
+
+    if (this.connectivity.isOnline()) {
+      this.syncNow();
+    }
 
     setInterval(() => this.retryIfNeeded(), AUTO_RETRY_INTERVAL_MS);
   }
@@ -87,8 +93,7 @@ export class SyncService {
       const remaining = await this.pendingChanges.getAllPending();
       this.status.state.set(remaining.length > 0 ? 'error' : 'saved');
     } catch (error) {
-      // A network-level failure (not a per-change server response) — leave everything Pending for the next retry.
-      const stillSyncing = (await this.pendingChanges.getAllPending()).filter((c) => c.status === 'Syncing');
+      const stillSyncing = await this.pendingChanges.getByStatus('Syncing');
       for (const change of stillSyncing) {
         await this.pendingChanges.updateStatus(change.id, 'Failed', change.retryCount + 1);
       }
