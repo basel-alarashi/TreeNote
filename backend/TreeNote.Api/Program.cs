@@ -98,9 +98,7 @@ builder.Services.Configure<GoogleSettings>(
 builder.Services.AddScoped<IGoogleAuthService, GoogleAuthService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
 
-builder.Services.AddMediatR(cfg => {
-    cfg.RegisterServicesFromAssembly(typeof(TreeNote.Application.Commands.Register.RegisterCommand).Assembly);
-});
+builder.Services.AddMediatR(typeof(TreeNote.Application.Commands.Register.RegisterCommand).Assembly);
 
 var app = builder.Build();
 

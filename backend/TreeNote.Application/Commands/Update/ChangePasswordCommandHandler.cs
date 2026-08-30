@@ -15,12 +15,14 @@ public class ChangePasswordCommandHandler : IRequestHandler<ChangePasswordComman
         _currentUser = currentUser;
     }
 
-    public async Task Handle(ChangePasswordCommand request, CancellationToken cancellationToken)
+    public async Task<Unit> Handle(ChangePasswordCommand request, CancellationToken cancellationToken)
     {
         var result = await _identityService.ChangePasswordAsync(
             _currentUser.UserId, request.CurrentPassword, request.NewPassword);
 
         if (!result.Succeeded)
             throw new BusinessRuleException(string.Join("; ", result.Errors));
+
+        return Unit.Value;
     }
 }

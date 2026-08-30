@@ -15,7 +15,7 @@ public class LogoutCommandHandler : IRequestHandler<LogoutCommand>
         _tokenService = tokenService;
     }
 
-    public async Task Handle(LogoutCommand request, CancellationToken cancellationToken)
+    public async Task<Unit> Handle(LogoutCommand request, CancellationToken cancellationToken)
     {
         var hash = _tokenService.HashToken(request.RefreshToken);
 
@@ -28,5 +28,7 @@ public class LogoutCommandHandler : IRequestHandler<LogoutCommand>
             stored.RevokedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync(cancellationToken);
         }
+
+        return Unit.Value;
     }
 }
