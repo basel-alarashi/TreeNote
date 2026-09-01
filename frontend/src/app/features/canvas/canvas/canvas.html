@@ -19,10 +19,10 @@
 
   <svg class="canvas-svg" #canvasSvg>
     <g [attr.transform]="viewport.transform()">
-      @for (rel of relationships(); track rel.parentId + rel.childId) {
+      @for (rel of visibleRelationships(); track rel.parentId + rel.childId) {
       <svg:path appConnector [parent]="topicById(rel.parentId)" [child]="topicById(rel.childId)"></svg:path>
       }
-      @for (topic of topics(); track topic.id) {
+      @for (topic of visibleTopics(); track topic.id) {
       <svg:g appTopic [topic]="topic" [selected]="selection.isSelected(topic.id)"
              (mousedown)="onTopicMouseDown($event, topic)"
              (contextmenu)="onTopicContextMenu($event, topic)"></svg:g>

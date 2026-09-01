@@ -28,7 +28,7 @@
   <button mat-raised-button color="primary" (click)="addRoot()">Add Root Topic</button>
 </div>
 
-  @for (topic of c.topics; track topic.id) {
+  <!--@for (topic of c.topics; track topic.id) {
 <app-topic-item [topic]="topic"
                 (rename)="rename($event)"
                 (delete)="remove($event)"
@@ -44,7 +44,7 @@
   <button mat-raised-button (click)="confirmAddChild()">Add</button>
 </div>
     }
-  }
+  }-->
 } @else {
 <p>Loading...</p>
 }

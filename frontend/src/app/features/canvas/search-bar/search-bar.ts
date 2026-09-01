@@ -1,5 +1,5 @@
 import { FormsModule } from '@angular/forms';
-import { Component, EventEmitter, Output, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Output, inject, signal } from '@angular/core';
 import { Subject, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { SearchTopicResult } from '../../../models/canvas/search-result.model';
@@ -8,6 +8,7 @@ import { SearchService } from '../../../services/canvas/search.service';
 @Component({
   selector: 'app-search-bar',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FormsModule],
   templateUrl: './search-bar.html',
   styleUrl: './search-bar.scss'

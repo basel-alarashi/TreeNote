@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -13,6 +13,7 @@ import { Workspace } from '../../models/workspace.model';
 @Component({
   selector: 'app-workspace-list',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule, RouterLink, MatListModule, MatButtonModule, MatIconModule, MatFormFieldModule, MatInputModule],
   templateUrl: './workspace-list.html',
   styleUrl: './workspace-list.scss',

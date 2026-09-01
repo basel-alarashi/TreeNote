@@ -1,10 +1,11 @@
-import { Component, HostBinding, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostBinding, computed, input } from '@angular/core';
 import { Topic } from '../../../models/topic.model';
 import { TOPIC_WIDTH, TOPIC_HEIGHT } from '../../../models/canvas/canvas-view.constants';
 
 @Component({
   selector: '[appConnector]',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: '',
 })
 export class ConnectorComponent {

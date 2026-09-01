@@ -1,10 +1,11 @@
-import { Component, HostBinding, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostBinding, input } from '@angular/core';
 
 export interface SelectionRect { x: number; y: number; width: number; height: number; }
 
 @Component({
   selector: '[appSelectionBox]',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: '',
 })
 export class SelectionBoxComponent {

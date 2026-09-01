@@ -1,9 +1,10 @@
-import { Component, Input, signal, inject } from '@angular/core';
+import { Component, Input, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { ExportService } from '../../../services/canvas/export.service';
 
 @Component({
   selector: 'app-export-menu',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './export-menu.html',
   styleUrl: './export-menu.scss'
 })

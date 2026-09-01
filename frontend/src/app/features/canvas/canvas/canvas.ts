@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, inject, input, output, signal, viewChild, effect, ViewChild } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ElementRef, HostListener, inject, input, output, signal, viewChild, effect, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -23,6 +23,7 @@ const FOCUS_PADDING = 200;
 @Component({
   selector: 'app-canvas',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     MatButtonModule,
@@ -66,7 +67,44 @@ export class CanvasComponent {
   readonly copyRequested = output<string[]>();
   readonly pasteRequested = output<void>();
 
-  private readonly containerRef = viewChild.required<ElementRef<HTMLDivElement>>('container');
+  readonly containerRef = viewChild<ElementRef<HTMLDivElement>>('container');
+
+  private readonly CULL_PADDING = 300; // canvas units of buffer around the visible area
+
+  private readonly viewportBounds = computed(() => {
+    const el = this.containerRef()?.nativeElement;
+    if (!el) return null;
+    const rect = el.getBoundingClientRect();
+    const scale = this.viewport.scale();
+    const tx = this.viewport.translateX();
+    const ty = this.viewport.translateY();
+    return {
+      minX: -tx / scale - this.CULL_PADDING,
+      minY: -ty / scale - this.CULL_PADDING,
+      maxX: (rect.width - tx) / scale + this.CULL_PADDING,
+      maxY: (rect.height - ty) / scale + this.CULL_PADDING,
+    };
+  });
+
+  readonly visibleTopics = computed(() => {
+    const bounds = this.viewportBounds();
+    const all = this.topics();
+    if (!bounds) return all;
+    return all.filter(t =>
+      t.x + TOPIC_WIDTH >= bounds.minX && t.x <= bounds.maxX &&
+      t.y + TOPIC_HEIGHT >= bounds.minY && t.y <= bounds.maxY
+    );
+  });
+
+  readonly visibleRelationships = computed(() => {
+    const bounds = this.viewportBounds();
+    const rels = this.relationships();
+    if (!bounds) return rels;
+    const visibleIds = new Set(this.visibleTopics().map(t => t.id));
+    // keep an edge if EITHER endpoint is visible — cheap approximation,
+    // acceptable since concept-map parent/child pairs are typically near each other.
+    return rels.filter(r => visibleIds.has(r.parentId) || visibleIds.has(r.childId));
+  });
 
   // Panning
   private isPanning = false;
@@ -101,6 +139,7 @@ export class CanvasComponent {
 
   private lastFocusedTopicId: string | null = null;
   private highlightTimeout?: ReturnType<typeof setTimeout>;
+  private cachedRect: DOMRect | null = null;
 
   constructor() {
     // Re-attempts focusing whenever the pending topic id or the loaded topic
@@ -168,6 +207,7 @@ export class CanvasComponent {
   }
 
   onTopicMouseDown(event: MouseEvent, topic: Topic): void {
+    this.cachedRect = null;
     event.stopPropagation();
     const additive = event.shiftKey || event.ctrlKey || event.metaKey;
 
@@ -191,6 +231,8 @@ export class CanvasComponent {
   }
 
   onBackgroundMouseDown(event: MouseEvent): void {
+    this.cachedRect = null;
+
     if (event.shiftKey) {
       this.isSelecting = true;
       this.selectionStartCanvas = this.viewport.screenToCanvas(event.clientX, event.clientY, this.rect());
@@ -296,6 +338,11 @@ export class CanvasComponent {
     if (ids.length) this.duplicateRequested.emit(ids);
   }
 
+  @HostListener('window:resize')
+  onResize(): void {
+    this.cachedRect = null;
+  }
+
   @HostListener('window:keydown', ['$event'])
   onKeydown(event: KeyboardEvent): void {
     const target = event.target as HTMLElement;
@@ -396,6 +443,10 @@ export class CanvasComponent {
   }
 
   private rect(): DOMRect {
-    return this.containerRef().nativeElement.getBoundingClientRect();
+    if (!this.cachedRect) {
+      const el = this.containerRef()?.nativeElement;
+      this.cachedRect = el ? el.getBoundingClientRect() : new DOMRect();
+    }
+    return this.cachedRect;
   }
 }
