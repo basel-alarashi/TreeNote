@@ -92,6 +92,7 @@ export class SyncService {
 
       const remaining = await this.pendingChanges.getAllPending();
       this.status.state.set(remaining.length > 0 ? 'error' : 'saved');
+      await this.refreshStuckCount();
     } catch (error) {
       const stillSyncing = await this.pendingChanges.getByStatus('Syncing');
       for (const change of stillSyncing) {
@@ -100,6 +101,7 @@ export class SyncService {
       this.status.state.set('error');
       this.status.lastError.set('Synchronization failed. Will retry automatically.');
       console.error(error);
+      await this.refreshStuckCount();
     } finally {
       this.isSyncing = false;
     }
@@ -141,7 +143,7 @@ export class SyncService {
 
   private async refreshCanvasFromServer(canvasId: string): Promise<void> {
     try {
-      const canvas = await firstValueFrom(this.canvasService.getById(canvasId)); // ASSUMPTION: matches GET /canvases/{id} full-graph response
+      const canvas = await firstValueFrom(this.canvasService.getById(canvasId));
       await this.offlineStorage.cacheCanvas(this.toCachedCanvas(canvas));
     } catch (error) {
       console.error(`Failed to refresh canvas ${canvasId} after sync`, error);
@@ -161,5 +163,11 @@ export class SyncService {
       topics: canvas.topics,
       relationships: canvas.relationships.map((r: any) => ({ ...r, canvasId: canvas.id }))
     };
+  }
+
+  private async refreshStuckCount(): Promise<void> {
+    const pending = await this.pendingChanges.getAllPending();
+    const stuck = pending.filter((c) => c.status === 'Failed' && c.retryCount >= MAX_RETRY_COUNT);
+    this.status.stuckCount.set(stuck.length);
   }
 }

@@ -32,6 +32,12 @@ export class ConnectionStatusBadgeComponent {
 
   readonly label = computed(() => {
     if (!this.isOnline()) return 'Offline';
+
+    const stuckCount = this.syncStatus.stuckCount();
+    if (stuckCount > 0) {
+      return `⚠️ ${stuckCount} stuck item${stuckCount > 1 ? 's' : ''}`;
+    }
+
     switch (this.syncStatus.state()) {
       case 'syncing': return 'Syncing…';
       case 'error': return 'Sync error';
