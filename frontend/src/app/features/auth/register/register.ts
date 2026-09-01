@@ -32,7 +32,7 @@ function passwordMatchValidator(passwordControlName: string): ValidatorFn {
     MatProgressSpinnerModule
   ],
   templateUrl: './register.html',
-  styleUrl: './register.scss'
+  styleUrl: '../login/login.scss'
 })
 export class RegisterComponent {
   readonly isLoading = signal(false);

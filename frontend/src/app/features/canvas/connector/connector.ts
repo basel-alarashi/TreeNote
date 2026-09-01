@@ -27,7 +27,7 @@ export class ConnectorComponent {
   });
 
   @HostBinding('attr.d') get d(): string { return this.pathValue(); }
-  @HostBinding('attr.fill') fill = 'none';
-  @HostBinding('attr.stroke') stroke = '#999';
-  @HostBinding('attr.stroke-width') strokeWidth = '2';
+  @HostBinding('attr.style') get style() {
+    return `fill: none; fill-opacity: 0.7; stroke: var(--tn-moss); stroke-width: 2;`;
+  }
 }

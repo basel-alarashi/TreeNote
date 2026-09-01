@@ -1,12 +1,85 @@
-@use '@angular/material' as mat;
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
 
-html {
-  color-scheme: light dark;
-
-  @include mat.theme(( color: mat.$violet-palette, typography: Roboto, density: 0, ));
+:root {
+  --tn-ink: #182620;
+  --tn-ink-soft: #4E5C53;
+  --tn-canopy: #1F6B4F;
+  --tn-canopy-dark: #164A37;
+  --tn-moss: #92A98B;
+  --tn-paper: #F1EFDF;
+  --tn-paper-raised: #FAF8EE;
+  --tn-mist: #DEDBC6;
+  --tn-clay: #B5562E;
+  --tn-clay-text: #93441F;
+  --tn-font-display: 'Fraunces', Georgia, serif;
+  --tn-font-body: 'IBM Plex Sans', -apple-system, sans-serif;
+  --tn-radius: 4px;
+  --tn-radius-lg: 8px;
 }
 
-body {
+* {
+  box-sizing: border-box;
+  transition: all .3s ease-in-out;
+}
+
+html, body {
   margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-family: var(--tn-font-body);
+  color: var(--tn-ink);
+  background: var(--tn-paper);
+}
+
+h1, h2, h3, .tn-display {
+  font-family: var(--tn-font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+:focus-visible {
+  outline: 2px solid var(--tn-canopy);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+// Material M3 system tokens → TreeNote palette
+html {
+  --mat-sys-primary: var(--tn-canopy);
+  --mat-sys-on-primary: #ffffff;
+  --mat-sys-surface: var(--tn-paper);
+  --mat-sys-on-surface: var(--tn-ink);
+  --mat-sys-outline: var(--tn-mist);
+  --mat-sys-error: var(--tn-clay-text);
+  --mdc-filled-button-container-color: var(--tn-canopy);
+  --mdc-filled-button-label-text-color: #ffffff;
+  --mdc-outlined-text-field-outline-color: var(--tn-mist);
+  --mdc-outlined-text-field-focus-outline-color: var(--tn-canopy);
+  --mdc-outlined-text-field-label-text-color: var(--tn-ink-soft);
+  --mdc-outlined-text-field-focus-label-text-color: var(--tn-canopy);
+}
+
+// mat-menu portals to an overlay outside the component tree — must be global.
+.tn-context-menu {
+  background: var(--tn-paper-raised) !important;
+  border: 1px solid var(--tn-mist);
+  border-radius: var(--tn-radius);
+
+  .mat-mdc-menu-item {
+    font-family: var(--tn-font-body);
+    font-size: 0.9rem;
+    color: var(--tn-ink);
+
+    .mat-icon {
+      color: var(--tn-ink-soft);
+    }
+
+    &:hover {
+      background: var(--tn-paper);
+    }
+  }
 }

@@ -7,6 +7,7 @@ import { TOPIC_WIDTH, TOPIC_HEIGHT } from '../../../models/canvas/canvas-view.co
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './topic.html',
+  styleUrl: './topic.scss',
 })
 export class TopicComponent {
   readonly topic = input.required<Topic>();

@@ -1,6 +1,100 @@
+:host {
+  display: block;
+  padding: 8px 0 48px;
+  max-width: 640px;
+  --mat-button-protected-label-text-color: var(--tn-paper);
+  --mat-button-protected-container-color: var(--tn-canopy);
+}
+
+h1 {
+  font-family: var(--tn-font-display);
+  font-size: 2rem;
+  margin: 0 0 24px;
+  color: var(--tn-ink);
+}
+
 .create-row {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+
+  mat-form-field {
+    flex: 1 1 240px;
+  }
+}
+
+.create-row-button {
+  margin-top: 8px;
+  transition: opacity .3s ease;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+mat-nav-list {
+  position: relative;
+  padding-left: 20px;
+  border-left: 1px solid var(--tn-mist);
+}
+
+:host ::ng-deep .mat-mdc-list-item {
+  position: relative;
+  padding: 4px 0 !important;
+  height: auto !important;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: -25px;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--tn-moss);
+    transform: translateY(-50%);
+  }
+
+  &:hover::before {
+    background: var(--tn-canopy);
+  }
+
+  a {
+    font-family: var(--tn-font-body);
+    color: var(--tn-ink);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--tn-canopy);
+    }
+  }
+
+  input {
+    border: 1px solid var(--tn-mist);
+    border-radius: var(--tn-radius);
+    padding: 4px 8px;
+    background: var(--tn-paper-raised);
+    font-family: var(--tn-font-body);
+  }
+
+  button.mat-mdc-icon-button {
+    color: var(--tn-ink-soft);
+
+    &:hover {
+      color: var(--tn-moss);
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .create-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .create-row-button {
+    margin-top: 0;
+  }
 }

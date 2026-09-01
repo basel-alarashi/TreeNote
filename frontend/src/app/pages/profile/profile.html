@@ -22,7 +22,7 @@
         <p class="info-text">{{ profileMessage() }}</p>
         }
 
-        <button mat-flat-button color="primary" type="submit" [disabled]="isSavingProfile()">
+        <button mat-raised-button class="profile-button" color="primary" type="submit" [disabled]="isSavingProfile()">
           Save Changes
         </button>
       </form>
@@ -69,7 +69,7 @@
         <p class="error-text">{{ passwordError() }}</p>
         }
 
-        <button mat-flat-button color="primary" type="submit" [disabled]="isSavingPassword()">
+        <button mat-raised-button class="profile-button" color="primary" type="submit" [disabled]="isSavingPassword()">
           Change Password
         </button>
       </form>

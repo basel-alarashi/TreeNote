@@ -16,7 +16,7 @@ import { Canvas } from '../../models/canvas/canvas.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule, RouterLink, MatListModule, MatButtonModule, MatIconModule, MatFormFieldModule, MatInputModule],
   templateUrl: './canvas-list.html',
-  styleUrl: './canvas-list.scss',
+  styleUrl: '../workspace-list/workspace-list.scss',
 })
 export class CanvasListComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
