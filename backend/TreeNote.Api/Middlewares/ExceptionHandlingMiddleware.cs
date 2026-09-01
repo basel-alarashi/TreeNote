@@ -1,4 +1,5 @@
-﻿using TreeNote.Application.Exceptions;
+﻿using Microsoft.EntityFrameworkCore;
+using TreeNote.Application.Exceptions;
 
 namespace TreeNote.Api.Middlewares;
 
@@ -36,6 +37,10 @@ public class ExceptionHandlingMiddleware
             await WriteProblemAsync(context, StatusCodes.Status409Conflict, ex.Message);
         }
         catch (BusinessRuleException ex)
+        {
+            await WriteProblemAsync(context, StatusCodes.Status400BadRequest, ex.Message);
+        }
+        catch (DbUpdateException ex)
         {
             await WriteProblemAsync(context, StatusCodes.Status400BadRequest, ex.Message);
         }

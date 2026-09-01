@@ -194,7 +194,14 @@ public sealed class SyncService : ISyncService
     /// Duplicates RelationshipService's cycle check (BR-005) here since sync bypasses that service — see the class-level assumption note.
     private async Task<bool> WouldCreateCycleAsync(Guid parentId, Guid childId, CancellationToken cancellationToken)
     {
-        var all = await _context.Relationships.AsNoTracking().ToListAsync(cancellationToken);
+        var canvasId = await _context.Topics.AsNoTracking()
+            .Where(t => t.Id == parentId)
+            .Select(t => t.CanvasId)
+            .FirstOrDefaultAsync(cancellationToken);
+        var all = await _context.Relationships
+            .AsNoTracking()
+            .Where(r => r.Parent.CanvasId == canvasId)
+            .ToListAsync(cancellationToken);
         var visited = new HashSet<Guid>();
         var stack = new Stack<Guid>();
         stack.Push(childId);

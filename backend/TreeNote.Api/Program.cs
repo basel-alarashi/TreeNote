@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text;
 using Microsoft.OpenApi;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using TreeNote.Application.Extensions;
@@ -26,7 +27,31 @@ builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    })
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var errors = context.ModelState
+                .Where(e => e.Value?.Errors.Count > 0)
+                .ToDictionary(
+                    e => e.Key,
+                    e => e.Value!.Errors.Select(x => x.ErrorMessage).ToArray());
+
+            int errorsCount = errors.Sum(e => e.Value.Length);
+
+            return new BadRequestObjectResult(new
+            {
+                status = StatusCodes.Status400BadRequest,
+                title = $"{errorsCount} validation error{(errorsCount > 1 ? "s" : "")} occurred.",
+                errors
+            })
+            {
+                ContentTypes = { "application/problem+json" }
+            };
+        };
     });
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
