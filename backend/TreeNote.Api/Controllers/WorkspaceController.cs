@@ -15,25 +15,25 @@ public class WorkspacesController : ControllerBase
     public WorkspacesController(IWorkspaceService workspaceService) => _workspaceService = workspaceService;
 
     [HttpGet]
-    public async Task<ActionResult<List<WorkspaceDto>>> GetAll() => Ok(await _workspaceService.GetAllForCurrentUserAsync());
+    public async Task<ActionResult<List<WorkspaceDto>>> GetAll(CancellationToken cancellationToken) => Ok(await _workspaceService.GetAllForCurrentUserAsync(cancellationToken));
 
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<WorkspaceDto>> GetById(Guid id) => Ok(await _workspaceService.GetByIdAsync(id));
+    public async Task<ActionResult<WorkspaceDto>> GetById(Guid id, CancellationToken cancellationToken) => Ok(await _workspaceService.GetByIdAsync(id, cancellationToken));
 
     [HttpPost]
-    public async Task<ActionResult<WorkspaceDto>> Create(CreateWorkspaceCommand command)
+    public async Task<ActionResult<WorkspaceDto>> Create(CreateWorkspaceCommand command, CancellationToken cancellationToken)
     {
-        var result = await _workspaceService.CreateAsync(command);
+        var result = await _workspaceService.CreateAsync(command, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<ActionResult<WorkspaceDto>> Update(Guid id, UpdateWorkspaceCommand command) => Ok(await _workspaceService.UpdateAsync(id, command));
+    public async Task<ActionResult<WorkspaceDto>> Update(Guid id, UpdateWorkspaceCommand command, CancellationToken cancellationToken) => Ok(await _workspaceService.UpdateAsync(id, command, cancellationToken));
 
     [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        await _workspaceService.DeleteAsync(id);
+        await _workspaceService.DeleteAsync(id, cancellationToken);
         return NoContent();
     }
 }

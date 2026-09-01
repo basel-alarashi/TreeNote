@@ -15,33 +15,33 @@ public class TopicsController : ControllerBase
     public TopicsController(ITopicService topicService) => _topicService = topicService;
 
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<TopicDto>> GetById(Guid id) => Ok(await _topicService.GetByIdAsync(id));
+    public async Task<ActionResult<TopicDto>> GetById(Guid id, CancellationToken cancellationToken) => Ok(await _topicService.GetByIdAsync(id, cancellationToken));
 
     [HttpPost]
-    public async Task<ActionResult<TopicDto>> Create(CreateTopicCommand command)
+    public async Task<ActionResult<TopicDto>> Create(CreateTopicCommand command, CancellationToken cancellationToken)
     {
-        var result = await _topicService.CreateAsync(command);
+        var result = await _topicService.CreateAsync(command, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<ActionResult<TopicDto>> Update(Guid id, UpdateTopicCommand command) => Ok(await _topicService.UpdateAsync(id, command));
+    public async Task<ActionResult<TopicDto>> Update(Guid id, UpdateTopicCommand command, CancellationToken cancellationToken) => Ok(await _topicService.UpdateAsync(id, command, cancellationToken));
 
     [HttpPut("positions")]
-    public async Task<ActionResult<List<TopicDto>>> UpdatePositions(UpdateTopicPositionsCommand command)
-    => Ok(await _topicService.UpdatePositionsAsync(command));
+    public async Task<ActionResult<List<TopicDto>>> UpdatePositions(UpdateTopicPositionsCommand command, CancellationToken cancellationToken)
+    => Ok(await _topicService.UpdatePositionsAsync(command, cancellationToken));
 
     [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        await _topicService.DeleteAsync(id);
+        await _topicService.DeleteAsync(id, cancellationToken);
         return NoContent();
     }
 
     [HttpPost("{id:guid}/duplicate")]
-    public async Task<ActionResult<TopicDto>> Duplicate(Guid id)
+    public async Task<ActionResult<TopicDto>> Duplicate(Guid id, CancellationToken cancellationToken)
     {
-        var result = await _topicService.DuplicateAsync(id);
+        var result = await _topicService.DuplicateAsync(id, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 }

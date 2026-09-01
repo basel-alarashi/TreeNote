@@ -5,6 +5,6 @@ namespace TreeNote.Application.Interfaces;
 
 public interface IRelationshipService
 {
-    Task<RelationshipDto> CreateAsync(CreateRelationshipCommand command);
-    Task DeleteAsync(DeleteRelationshipCommand command);
+    Task<RelationshipDto> CreateAsync(CreateRelationshipCommand command, CancellationToken cancellationToken = default);
+    Task DeleteAsync(DeleteRelationshipCommand command, CancellationToken cancellationToken = default);
 }

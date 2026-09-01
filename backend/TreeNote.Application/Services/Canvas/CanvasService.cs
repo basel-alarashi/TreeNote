@@ -23,37 +23,40 @@ public class CanvasService : ICanvasService
         _relationshipCleanup = relationshipCleanup;
     }
 
-    public async Task<List<CanvasDto>> GetByWorkspaceAsync(Guid workspaceId)
+    public async Task<List<CanvasDto>> GetByWorkspaceAsync(Guid workspaceId, CancellationToken cancellationToken = default)
     {
-        await EnsureWorkspaceOwnedAsync(workspaceId);
+        await EnsureWorkspaceOwnedAsync(workspaceId, cancellationToken);
 
         return await _context.Canvases
+            .AsNoTracking()
             .Where(c => c.WorkspaceId == workspaceId)
             .OrderBy(c => c.CreatedAt)
             .Select(c => new CanvasDto(c.Id, c.WorkspaceId, c.Name, c.CreatedAt))
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<CanvasDetailDto> GetByIdAsync(Guid id)
+    public async Task<CanvasDetailDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var canvas = await GetOwnedCanvasAsync(id);
+        var canvas = await GetOwnedCanvasAsync(id, cancellationToken);
 
         var topics = await _context.Topics
+            .AsNoTracking()
             .Where(t => t.CanvasId == id)
             .Select(t => new TopicDto(t.Id, t.CanvasId, t.Title, t.X, t.Y, t.Emoji, t.CreatedAt, t.RowVersion))
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         var relationships = await _context.Relationships
+            .AsNoTracking()
             .Where(r => r.Parent.CanvasId == id)
             .Select(r => new RelationshipDto(r.ParentId, r.ChildId))
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         return new CanvasDetailDto(canvas.Id, canvas.WorkspaceId, canvas.Name, canvas.CreatedAt, topics, relationships);
     }
 
-    public async Task<CanvasDto> CreateAsync(CreateCanvasCommand command)
+    public async Task<CanvasDto> CreateAsync(CreateCanvasCommand command, CancellationToken cancellationToken = default)
     {
-        await EnsureWorkspaceOwnedAsync(command.WorkspaceId);
+        await EnsureWorkspaceOwnedAsync(command.WorkspaceId, cancellationToken);
 
         var canvas = new Canvas
         {
@@ -63,34 +66,35 @@ public class CanvasService : ICanvasService
         };
 
         _context.Canvases.Add(canvas);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
 
         return new CanvasDto(canvas.Id, canvas.WorkspaceId, canvas.Name, canvas.CreatedAt);
     }
 
-    public async Task<CanvasDto> UpdateAsync(Guid id, UpdateCanvasCommand command)
+    public async Task<CanvasDto> UpdateAsync(Guid id, UpdateCanvasCommand command, CancellationToken cancellationToken = default)
     {
-        var canvas = await GetOwnedCanvasAsync(id);
+        var canvas = await GetOwnedCanvasAsync(id, cancellationToken);
         canvas.Name = command.Name;
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
         return new CanvasDto(canvas.Id, canvas.WorkspaceId, canvas.Name, canvas.CreatedAt);
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var canvas = await GetOwnedCanvasAsync(id);
+        var canvas = await GetOwnedCanvasAsync(id, cancellationToken);
 
         var topicIds = await _context.Topics
+            .AsNoTracking()
             .Where(t => t.CanvasId == id)
             .Select(t => t.Id)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         try
         {
-            await _relationshipCleanup.RemoveRelationshipsForTopicsAsync(topicIds);
+            await _relationshipCleanup.RemoveRelationshipsForTopicsAsync(topicIds, cancellationToken);
 
             _context.Canvases.Remove(canvas); // cascades to Topics
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
         }
         catch (DbUpdateConcurrencyException)
         {
@@ -98,19 +102,19 @@ public class CanvasService : ICanvasService
         }
     }
 
-    private async Task EnsureWorkspaceOwnedAsync(Guid workspaceId)
+    private async Task EnsureWorkspaceOwnedAsync(Guid workspaceId, CancellationToken cancellationToken = default)
     {
-        var workspace = await _context.Workspaces.FirstOrDefaultAsync(w => w.Id == workspaceId);
+        var workspace = await _context.Workspaces.AsNoTracking().FirstOrDefaultAsync(w => w.Id == workspaceId, cancellationToken);
         if (workspace is null) throw new NotFoundException($"Workspace '{workspaceId}' was not found.");
         if (workspace.UserId != _currentUser.UserId) throw new ForbiddenAccessException();
     }
 
-    private async Task<Canvas> GetOwnedCanvasAsync(Guid id)
+    private async Task<Canvas> GetOwnedCanvasAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var canvas = await _context.Canvases
             .Include(c => c.Workspace)
             .AsTracking()
-            .FirstOrDefaultAsync(c => c.Id == id);
+            .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
 
         if (canvas is null) throw new NotFoundException($"Canvas '{id}' was not found.");
         if (canvas.Workspace.UserId != _currentUser.UserId) throw new ForbiddenAccessException();

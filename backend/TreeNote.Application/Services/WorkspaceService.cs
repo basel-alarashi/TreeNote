@@ -23,22 +23,23 @@ public class WorkspaceService : IWorkspaceService
         _relationshipCleanup = relationshipCleanup;
     }
 
-    public async Task<List<WorkspaceDto>> GetAllForCurrentUserAsync()
+    public async Task<List<WorkspaceDto>> GetAllForCurrentUserAsync(CancellationToken cancellationToken = default)
     {
         return await _context.Workspaces
+            .AsNoTracking()
             .Where(w => w.UserId == _currentUser.UserId)
             .OrderBy(w => w.CreatedAt)
             .Select(w => new WorkspaceDto(w.Id, w.Name, w.CreatedAt))
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<WorkspaceDto> GetByIdAsync(Guid id)
+    public async Task<WorkspaceDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var workspace = await GetOwnedWorkspaceAsync(id);
+        var workspace = await GetOwnedWorkspaceAsync(id, cancellationToken);
         return new WorkspaceDto(workspace.Id, workspace.Name, workspace.CreatedAt);
     }
 
-    public async Task<WorkspaceDto> CreateAsync(CreateWorkspaceCommand command)
+    public async Task<WorkspaceDto> CreateAsync(CreateWorkspaceCommand command, CancellationToken cancellationToken = default)
     {
         var workspace = new Workspace
         {
@@ -48,34 +49,35 @@ public class WorkspaceService : IWorkspaceService
         };
 
         _context.Workspaces.Add(workspace);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
 
         return new WorkspaceDto(workspace.Id, workspace.Name, workspace.CreatedAt);
     }
 
-    public async Task<WorkspaceDto> UpdateAsync(Guid id, UpdateWorkspaceCommand command)
+    public async Task<WorkspaceDto> UpdateAsync(Guid id, UpdateWorkspaceCommand command, CancellationToken cancellationToken = default)
     {
-        var workspace = await GetOwnedWorkspaceAsync(id);
+        var workspace = await GetOwnedWorkspaceAsync(id, cancellationToken);
         workspace.Name = command.Name;
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
         return new WorkspaceDto(workspace.Id, workspace.Name, workspace.CreatedAt);
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var workspace = await GetOwnedWorkspaceAsync(id);
+        var workspace = await GetOwnedWorkspaceAsync(id, cancellationToken);
 
         var topicIds = await _context.Topics
+            .AsNoTracking()
             .Where(t => t.Canvas.WorkspaceId == id)
             .Select(t => t.Id)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         try
         {
-            await _relationshipCleanup.RemoveRelationshipsForTopicsAsync(topicIds);
+            await _relationshipCleanup.RemoveRelationshipsForTopicsAsync(topicIds, cancellationToken);
 
             _context.Workspaces.Remove(workspace); // cascades to Canvases -> Topics
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
         }
         catch (DbUpdateConcurrencyException)
         {
@@ -83,9 +85,9 @@ public class WorkspaceService : IWorkspaceService
         }
     }
 
-    private async Task<Workspace> GetOwnedWorkspaceAsync(Guid id)
+    private async Task<Workspace> GetOwnedWorkspaceAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var workspace = await _context.Workspaces.AsTracking().FirstOrDefaultAsync(w => w.Id == id);
+        var workspace = await _context.Workspaces.AsTracking().FirstOrDefaultAsync(w => w.Id == id, cancellationToken);
         if (workspace is null) throw new NotFoundException($"Workspace '{id}' was not found.");
         if (workspace.UserId != _currentUser.UserId) throw new ForbiddenAccessException();
         return workspace;

@@ -18,56 +18,57 @@ public class RelationshipService : IRelationshipService
         _currentUser = currentUser;
     }
 
-    public async Task<RelationshipDto> CreateAsync(CreateRelationshipCommand command)
+    public async Task<RelationshipDto> CreateAsync(CreateRelationshipCommand command, CancellationToken cancellationToken = default)
     {
         if (command.ParentId == command.ChildId)
             throw new BusinessRuleException("A topic cannot be its own parent.");
 
-        var parent = await GetOwnedTopicAsync(command.ParentId);
-        var child = await GetOwnedTopicAsync(command.ChildId);
+        var parent = await GetOwnedTopicAsync(command.ParentId, cancellationToken);
+        var child = await GetOwnedTopicAsync(command.ChildId, cancellationToken);
 
         if (parent.CanvasId != child.CanvasId)
             throw new BusinessRuleException("Relationships must connect topics within the same canvas.");
 
         var exists = await _context.Relationships
-            .AnyAsync(r => r.ParentId == command.ParentId && r.ChildId == command.ChildId);
+            .AnyAsync(r => r.ParentId == command.ParentId && r.ChildId == command.ChildId, cancellationToken);
         if (exists)
             throw new ConflictException("This relationship already exists.");
 
-        if (await WouldCreateCycleAsync(parent.CanvasId, command.ParentId, command.ChildId))
+        if (await WouldCreateCycleAsync(parent.CanvasId, command.ParentId, command.ChildId, cancellationToken))
             throw new BusinessRuleException("This relationship would create a cycle.");
 
         var relationship = new Relationship { ParentId = command.ParentId, ChildId = command.ChildId };
         _context.Relationships.Add(relationship);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
 
         return new RelationshipDto(relationship.ParentId, relationship.ChildId);
     }
 
-    public async Task DeleteAsync(DeleteRelationshipCommand command)
+    public async Task DeleteAsync(DeleteRelationshipCommand command, CancellationToken cancellationToken = default)
     {
         // Ownership check via the parent topic is sufficient — both topics are
         // already guaranteed to be in the same (owned) canvas by CreateAsync's rules.
         await GetOwnedTopicAsync(command.ParentId);
 
         var relationship = await _context.Relationships
-            .FirstOrDefaultAsync(r => r.ParentId == command.ParentId && r.ChildId == command.ChildId);
+            .FirstOrDefaultAsync(r => r.ParentId == command.ParentId && r.ChildId == command.ChildId, cancellationToken);
 
         if (relationship is null)
             throw new NotFoundException("Relationship was not found.");
 
         _context.Relationships.Remove(relationship);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
     }
 
     // Adding edge Parent->Child creates a cycle iff Parent is already reachable
     // FROM Child via existing edges (that path + the new edge closes a loop).
-    private async Task<bool> WouldCreateCycleAsync(Guid canvasId, Guid parentId, Guid childId)
+    private async Task<bool> WouldCreateCycleAsync(Guid canvasId, Guid parentId, Guid childId, CancellationToken cancellationToken = default)
     {
         var edges = await _context.Relationships
+            .AsNoTracking()
             .Where(r => r.Parent.CanvasId == canvasId)
             .Select(r => new { r.ParentId, r.ChildId })
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         var adjacency = edges
             .GroupBy(e => e.ParentId)
@@ -92,12 +93,13 @@ public class RelationshipService : IRelationshipService
         return false;
     }
 
-    private async Task<Topic> GetOwnedTopicAsync(Guid id)
+    private async Task<Topic> GetOwnedTopicAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var topic = await _context.Topics
             .Include(t => t.Canvas)
             .ThenInclude(c => c.Workspace)
-            .FirstOrDefaultAsync(t => t.Id == id);
+            .AsNoTracking()
+            .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
 
         if (topic is null) throw new NotFoundException($"Topic '{id}' was not found.");
         if (topic.Canvas.Workspace.UserId != _currentUser.UserId) throw new ForbiddenAccessException();
