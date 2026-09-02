@@ -12,7 +12,7 @@
   @for (canvas of canvases(); track canvas.id) {
   <mat-list-item>
     @if (editingId === canvas.id) {
-    <input [(ngModel)]="editingName" (keyup.enter)="confirmRename()" />
+    <input [(ngModel)]="editingName" (keyup.enter)="confirmRename()" aria-label="Rename {{ canvas.name }}" />
     <button mat-icon-button (click)="confirmRename()" aria-label="Confirm rename"><mat-icon>check</mat-icon></button>
     <button mat-icon-button (click)="cancelRename()" aria-label="Cancel rename"><mat-icon>close</mat-icon></button>
     } @else {
