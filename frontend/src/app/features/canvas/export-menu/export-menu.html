@@ -1,9 +1,13 @@
 <div class="export-menu">
   <button type="button"
+          #trigger
           class="export-menu__trigger"
           (click)="toggleMenu()"
+          (keydown)="onTriggerKeydown($event)"
           [disabled]="isExporting()"
-          aria-haspopup="true">
+          [attr.aria-expanded]="isOpen()"
+          aria-haspopup="menu"
+          id="export-menu-trigger">
     @if (isExporting()) {
     Exporting…
     } @else {
@@ -12,16 +16,20 @@
   </button>
 
   @if (isOpen()) {
-  <ul class="export-menu__options">
-    <li (click)="exportPng()">Export as PNG</li>
-    <li (click)="exportPdf()">Export as PDF</li>
+  <ul class="export-menu__options" role="menu" aria-labelledby="export-menu-trigger" (keydown)="onMenuKeydown($event)">
+    <li role="none">
+      <button type="button" #menuItem role="menuitem" tabindex="-1" (click)="exportPng()">Export as PNG</button>
+    </li>
+    <li role="none">
+      <button type="button" #menuItem role="menuitem" tabindex="-1" (click)="exportPdf()">Export as PDF</button>
+    </li>
   </ul>
   }
 
   @if (errorMessage()) {
-  <div class="export-menu__error">{{ errorMessage() }}</div>
+  <div class="export-menu__error" role="alert">{{ errorMessage() }}</div>
   }
   @if (infoMessage()) {
-  <div class="export-menu__info">{{ infoMessage() }}</div>
+  <div class="export-menu__info" role="status">{{ infoMessage() }}</div>
   }
 </div>
