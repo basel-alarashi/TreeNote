@@ -23,6 +23,10 @@ h1 {
   mat-form-field {
     flex: 1 1 240px;
   }
+
+  input {
+      padding: 0 8px;
+  }
 }
 
 .create-row-button {
