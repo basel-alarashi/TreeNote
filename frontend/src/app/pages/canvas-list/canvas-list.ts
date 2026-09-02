@@ -25,6 +25,8 @@ export class CanvasListComponent implements OnInit {
   readonly workspaceId = signal('');
   readonly canvases = signal<Canvas[]>([]);
   newCanvasName = '';
+  editingId: string | null = null;
+  editingName = '';
 
   ngOnInit(): void {
     this.workspaceId.set(this.route.snapshot.paramMap.get('workspaceId')!);
@@ -39,6 +41,22 @@ export class CanvasListComponent implements OnInit {
     const name = this.newCanvasName.trim();
     if (!name) return;
     this.canvasService.create({ workspaceId: this.workspaceId(), name }).subscribe(() => { this.newCanvasName = ''; this.load(); });
+  }
+
+  startRename(canvas: Canvas): void {
+    this.editingId = canvas.id;
+    this.editingName = canvas.name;
+  }
+
+  confirmRename(): void {
+    if (!this.editingId) return;
+    const name = this.editingName.trim();
+    if (!name) return;
+    this.canvasService.update(this.editingId, { name }).subscribe(() => { this.editingId = null; this.load(); });
+  }
+
+  cancelRename(): void {
+    this.editingId = null;
   }
 
   remove(id: string): void {

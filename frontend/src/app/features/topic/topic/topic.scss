@@ -2,6 +2,11 @@
   cursor: grab;
 }
 
+  :host:focus-visible {
+    outline: 2px solid var(--tn-canopy);
+    outline-offset: 2px;
+  }
+
 .topic-node {
   fill: var(--tn-paper-raised);
   stroke: var(--tn-mist);

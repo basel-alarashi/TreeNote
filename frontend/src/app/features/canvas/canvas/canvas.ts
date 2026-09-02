@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ViewportService } from '../../../services/canvas/viewport.service';
 import { SelectionService } from '../../../services/canvas/selection.service';
 import { HistoryService } from '../../../services/canvas/history.service';
@@ -29,6 +30,7 @@ const FOCUS_PADDING = 200;
     MatButtonModule,
     MatIconModule,
     MatMenuModule,
+    MatTooltipModule,
     TopicComponent,
     ConnectorComponent,
     SelectionBoxComponent,
@@ -178,6 +180,41 @@ export class CanvasComponent {
 
     this.lastFocusedTopicId = result.topicId;
     this.focusTopic(topic);
+  }
+
+  onTopicKeydown(event: KeyboardEvent, topic: Topic): void {
+    const additive = event.shiftKey || event.ctrlKey || event.metaKey;
+
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      event.stopPropagation();
+      this.selection.select(topic.id, additive);
+      return;
+    }
+
+    const step = event.shiftKey ? 20 : 4;
+    let dx = 0, dy = 0;
+    switch (event.key) {
+      case 'ArrowUp': dy = -step; break;
+      case 'ArrowDown': dy = step; break;
+      case 'ArrowLeft': dx = -step; break;
+      case 'ArrowRight': dx = step; break;
+      default: return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+
+    const ids = this.selection.isSelected(topic.id) && this.selection.ids.length > 0
+      ? this.selection.ids
+      : [topic.id];
+
+    const moves = ids.map((id) => {
+      const t = this.topicById(id)!;
+      return { id, fromX: t.x, fromY: t.y, toX: t.x + dx, toY: t.y + dy };
+    });
+
+    this.positionsChanged.emit(moves.map((m) => ({ id: m.id, x: m.toX, y: m.toY })));
+    this.dragEnded.emit(moves);
   }
 
   private focusTopic(topic: Topic): void {

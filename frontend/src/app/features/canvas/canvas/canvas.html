@@ -9,12 +9,12 @@
     <app-connection-status-badge [lastSyncedAt]="lastSyncedAt()"></app-connection-status-badge>
     <app-search-bar (resultSelected)="onSearchResultSelected($event)"></app-search-bar>
     <app-export-menu [svgElement]="svgElement!" [canvasName]="name()"></app-export-menu>
-    <button mat-icon-button [disabled]="!history.canUndo()" (click)="history.undo()"><mat-icon>undo</mat-icon></button>
-    <button mat-icon-button [disabled]="!history.canRedo()" (click)="history.redo()"><mat-icon>redo</mat-icon></button>
-    <button mat-icon-button (click)="zoomIn()"><mat-icon>zoom_in</mat-icon></button>
-    <button mat-icon-button (click)="zoomOut()"><mat-icon>zoom_out</mat-icon></button>
-    <button mat-icon-button (click)="resetView()"><mat-icon>center_focus_strong</mat-icon></button>
-    <button mat-icon-button (click)="fitToScreen()"><mat-icon>fit_screen</mat-icon></button>
+    <button mat-icon-button [disabled]="!history.canUndo()" (click)="history.undo()" matTooltip="Undo" aria-label="Undo"><mat-icon>undo</mat-icon></button>
+    <button mat-icon-button [disabled]="!history.canRedo()" (click)="history.redo()" matTooltip="Redo" aria-label="Redo"><mat-icon>redo</mat-icon></button>
+    <button mat-icon-button (click)="zoomIn()" matTooltip="Zoom in" aria-label="Zoom in"><mat-icon>zoom_in</mat-icon></button>
+    <button mat-icon-button (click)="zoomOut()" matTooltip="Zoom out" aria-label="Zoom out"><mat-icon>zoom_out</mat-icon></button>
+    <button mat-icon-button (click)="resetView()" matTooltip="Reset view" aria-label="Reset view"><mat-icon>center_focus_strong</mat-icon></button>
+    <button mat-icon-button (click)="fitToScreen()" matTooltip="Fit to screen" aria-label="Fit to screen"><mat-icon>fit_screen</mat-icon></button>
   </div>
 
   <svg class="canvas-svg" #canvasSvg>
@@ -24,7 +24,12 @@
       }
       @for (topic of visibleTopics(); track topic.id) {
       <svg:g appTopic [topic]="topic" [selected]="selection.isSelected(topic.id)"
+             tabindex="0"
+             role="button"
+             [attr.aria-label]="topic.title + (selection.isSelected(topic.id) ? ' (selected)' : '')"
+             [attr.aria-pressed]="selection.isSelected(topic.id)"
              (mousedown)="onTopicMouseDown($event, topic)"
+             (keydown)="onTopicKeydown($event, topic)"
              (contextmenu)="onTopicContextMenu($event, topic)"></svg:g>
       }
       @if (selectionBoxRect(); as box) {
