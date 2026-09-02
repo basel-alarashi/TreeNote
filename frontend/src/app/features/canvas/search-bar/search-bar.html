@@ -16,12 +16,12 @@
   </div>
 
   @if (isSearching()) {
-    <div class="search-bar__status">Searching…</div>
+    <div class="search-bar__status" role="status">Searching…</div>
   }
 
   @if (hasSearched() && !isSearching()) {
     @if (results().length === 0) {
-      <div class="search-bar__empty">No topics found.</div>
+      <div class="search-bar__empty" role="status">No topics found.</div>
     } @else {
       <ul class="search-bar__results">
         @for (result of results(); track result.topicId) {
