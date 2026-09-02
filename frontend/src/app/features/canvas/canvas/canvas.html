@@ -41,7 +41,7 @@
   <div class="context-menu-anchor" [style.left.px]="contextMenuPosition().x" [style.top.px]="contextMenuPosition().y"
        [matMenuTriggerFor]="topicMenu" #menuTrigger="matMenuTrigger"></div>
 
-  <mat-menu #topicMenu="matMenu" class="tn-context-menu">
+  <mat-menu #topicMenu="matMenu" class="tn-context-menu" (closed)="onContextMenuClosed()">
     <button mat-menu-item (click)="addChild()"><mat-icon>add</mat-icon> Add Child</button>
     <button mat-menu-item (click)="addSibling()"><mat-icon>add_box</mat-icon> Add Sibling</button>
     <button mat-menu-item (click)="renameFromMenu()"><mat-icon>edit</mat-icon> Rename (F2)</button>

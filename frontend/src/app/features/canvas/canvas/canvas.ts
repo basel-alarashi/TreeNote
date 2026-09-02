@@ -182,6 +182,34 @@ export class CanvasComponent {
     this.focusTopic(topic);
   }
 
+  topicById(id: string): Topic | undefined {
+    return this.topics().find((t) => t.id === id);
+  }
+
+  onTopicMouseDown(event: MouseEvent, topic: Topic): void {
+    this.cachedRect = null;
+    event.stopPropagation();
+    const additive = event.shiftKey || event.ctrlKey || event.metaKey;
+
+    if (additive) {
+      this.selection.select(topic.id, true);
+    } else if (!this.selection.isSelected(topic.id)) {
+      this.selection.select(topic.id, false);
+    }
+    // Clicking an already-selected topic without a modifier keeps the whole
+    // group selected, so dragging any one of them moves the group together.
+
+    const ids = this.selection.ids.length > 0 ? this.selection.ids : [topic.id];
+    this.isDragging = true;
+    this.draggingIds = ids;
+    this.dragStartClient = { x: event.clientX, y: event.clientY };
+    this.dragOrigin.clear();
+    for (const id of ids) {
+      const t = this.topicById(id);
+      if (t) this.dragOrigin.set(id, { x: t.x, y: t.y });
+    }
+  }
+
   onTopicKeydown(event: KeyboardEvent, topic: Topic): void {
     const additive = event.shiftKey || event.ctrlKey || event.metaKey;
 
@@ -231,40 +259,6 @@ export class CanvasComponent {
     this.highlightedTopicId.set(topic.id);
     clearTimeout(this.highlightTimeout);
     this.highlightTimeout = setTimeout(() => this.highlightedTopicId.set(null), 2000);
-  }
-
-  topicById(id: string): Topic | undefined {
-    return this.topics().find((t) => t.id === id);
-  }
-
-  onWheel(event: WheelEvent): void {
-    event.preventDefault();
-    const factor = event.deltaY < 0 ? 1.1 : 1 / 1.1;
-    this.viewport.zoomAt(factor, event.clientX, event.clientY, this.rect());
-  }
-
-  onTopicMouseDown(event: MouseEvent, topic: Topic): void {
-    this.cachedRect = null;
-    event.stopPropagation();
-    const additive = event.shiftKey || event.ctrlKey || event.metaKey;
-
-    if (additive) {
-      this.selection.select(topic.id, true);
-    } else if (!this.selection.isSelected(topic.id)) {
-      this.selection.select(topic.id, false);
-    }
-    // Clicking an already-selected topic without a modifier keeps the whole
-    // group selected, so dragging any one of them moves the group together.
-
-    const ids = this.selection.ids.length > 0 ? this.selection.ids : [topic.id];
-    this.isDragging = true;
-    this.draggingIds = ids;
-    this.dragStartClient = { x: event.clientX, y: event.clientY };
-    this.dragOrigin.clear();
-    for (const id of ids) {
-      const t = this.topicById(id);
-      if (t) this.dragOrigin.set(id, { x: t.x, y: t.y });
-    }
   }
 
   onBackgroundMouseDown(event: MouseEvent): void {
@@ -329,17 +323,29 @@ export class CanvasComponent {
     this.isPanning = false;
   }
 
+  onWheel(event: WheelEvent): void {
+    event.preventDefault();
+    const factor = event.deltaY < 0 ? 1.1 : 1 / 1.1;
+    this.viewport.zoomAt(factor, event.clientX, event.clientY, this.rect());
+  }
+
+  private lastContextMenuTarget: SVGGElement | null = null;
+
   onTopicContextMenu(event: MouseEvent, topic: Topic): void {
     event.preventDefault();
     event.stopPropagation();
+    this.lastContextMenuTarget = event.currentTarget as SVGGElement;
 
     if (!this.selection.isSelected(topic.id)) {
       this.selection.select(topic.id, false);
     }
-
     this.contextMenuTopicId.set(topic.id);
     this.contextMenuPosition.set({ x: event.clientX, y: event.clientY });
     setTimeout(() => this.menuTrigger().openMenu());
+  }
+
+  onContextMenuClosed(): void {
+    this.lastContextMenuTarget?.focus();
   }
 
   private menuTargetIds(): string[] {
