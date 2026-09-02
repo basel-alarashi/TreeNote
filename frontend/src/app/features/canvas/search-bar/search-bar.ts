@@ -21,8 +21,8 @@ export class SearchBarComponent {
   readonly results = signal<SearchTopicResult[]>([]);
   readonly isSearching = signal(false);
   readonly hasSearched = signal(false);
+  readonly activeIndex = signal(-1);
 
-  /** Emits the chosen result so the host page can navigate the canvas to it. */
   @Output() resultSelected = new EventEmitter<SearchTopicResult>();
 
   constructor() {
@@ -45,18 +45,53 @@ export class SearchBarComponent {
         this.isSearching.set(false);
         this.hasSearched.set(this.query().trim().length > 0);
         this.results.set(results ?? []);
+        this.activeIndex.set(-1);
       });
   }
 
   onInputChange(value: string): void {
     this.query.set(value);
+    this.activeIndex.set(-1);
     this.queryChanged$.next(value);
+  }
+
+  onKeydown(event: KeyboardEvent): void {
+    const items = this.results();
+
+    if (items.length === 0) {
+      if (event.key === 'Escape') this.clear();
+      return;
+    }
+
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        this.activeIndex.update((i) => (i + 1) % items.length);
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        this.activeIndex.update((i) => (i - 1 + items.length) % items.length);
+        break;
+      case 'Enter': {
+        const active = this.activeIndex();
+        if (active >= 0) {
+          event.preventDefault();
+          this.selectResult(items[active]);
+        }
+        break;
+      }
+      case 'Escape':
+        event.preventDefault();
+        this.clear();
+        break;
+    }
   }
 
   clear(): void {
     this.query.set('');
     this.results.set([]);
     this.hasSearched.set(false);
+    this.activeIndex.set(-1);
     this.queryChanged$.next('');
   }
 

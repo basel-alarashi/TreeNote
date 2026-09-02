@@ -110,6 +110,12 @@
   flex-shrink: 0;
 }
 
+.search-bar__result--active {
+  background: var(--tn-paper);
+  outline: 2px solid var(--tn-canopy);
+  outline-offset: -2px;
+}
+
 @media (max-width: 480px) {
   .search-bar {
     min-width: 140px;
