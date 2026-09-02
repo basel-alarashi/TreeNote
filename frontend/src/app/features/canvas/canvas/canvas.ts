@@ -187,6 +187,8 @@ export class CanvasComponent {
   }
 
   onTopicMouseDown(event: MouseEvent, topic: Topic): void {
+    if (event.button === 2) return;
+
     this.cachedRect = null;
     event.stopPropagation();
     const additive = event.shiftKey || event.ctrlKey || event.metaKey;
@@ -262,6 +264,8 @@ export class CanvasComponent {
   }
 
   onBackgroundMouseDown(event: MouseEvent): void {
+    if (event.button === 2) return;
+
     this.cachedRect = null;
 
     if (event.shiftKey) {
@@ -295,7 +299,9 @@ export class CanvasComponent {
     this.viewport.pan(dx, dy);
   }
 
-  onBackgroundMouseUp(): void {
+  onBackgroundMouseUp(event: MouseEvent): void {
+    if (event.button === 2) return;
+
     if (this.isDragging) {
       this.isDragging = false;
       if (this.draggingIds.length > 0) {
@@ -341,7 +347,7 @@ export class CanvasComponent {
     }
     this.contextMenuTopicId.set(topic.id);
     this.contextMenuPosition.set({ x: event.clientX, y: event.clientY });
-    setTimeout(() => this.menuTrigger().openMenu());
+    setTimeout(() => this.menuTrigger().openMenu(), 300);
   }
 
   onContextMenuClosed(): void {

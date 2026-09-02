@@ -3,8 +3,8 @@
      (wheel)="onWheel($event)"
      (mousedown)="onBackgroundMouseDown($event)"
      (mousemove)="onBackgroundMouseMove($event)"
-     (mouseup)="onBackgroundMouseUp()"
-     (mouseleave)="onBackgroundMouseUp()">
+     (mouseup)="onBackgroundMouseUp($event)"
+     (mouseleave)="onBackgroundMouseUp($event)">
   <div class="toolbar">
     <app-connection-status-badge [lastSyncedAt]="lastSyncedAt()"></app-connection-status-badge>
     <app-search-bar (resultSelected)="onSearchResultSelected($event)"></app-search-bar>

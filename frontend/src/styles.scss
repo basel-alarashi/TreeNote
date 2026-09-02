@@ -83,3 +83,7 @@ html {
     }
   }
 }
+
+.cdk-overlay-popover {
+  transition: none !important;
+}
