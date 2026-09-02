@@ -73,6 +73,11 @@
               "buildTarget": "frontend:build:development"
             }
           },
+          "options": {
+            "ssl": true,
+            "sslKey": "ssl/private.key",
+            "sslCert": "ssl/certificate.crt"
+          },
           "defaultConfiguration": "development"
         },
         "test": {

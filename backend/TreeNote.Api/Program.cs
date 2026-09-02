@@ -73,13 +73,24 @@ builder.Services.AddSwaggerGen(c =>
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? [];
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngularDev", policy =>
-        policy.WithOrigins("http://localhost:4200")
-              .AllowAnyHeader()
-              .AllowAnyMethod());
+        policy.WithOrigins("https://localhost:4200")
+              .WithHeaders("Authorization", "Content-Type")
+              .WithMethods("GET", "POST", "PUT", "DELETE")
+              .AllowCredentials());
+
+    options.AddPolicy("Production", policy =>
+        policy.WithOrigins(allowedOrigins)
+              .WithHeaders("Authorization", "Content-Type")
+              .WithMethods("GET", "POST", "PUT", "DELETE")
+              .AllowCredentials());
 });
+
 //JWT Binding configuration
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection(JwtSettings.SectionName));
@@ -96,6 +107,11 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 var jwtSettings = builder.Configuration
     .GetSection(JwtSettings.SectionName)
     .Get<JwtSettings>()!;
+
+if (string.IsNullOrWhiteSpace(jwtSettings.Secret) || Encoding.UTF8.GetByteCount(jwtSettings.Secret) < 32)
+{
+    throw new InvalidOperationException("JwtSettings:Secret is missing or shorter than 32 bytes (256 bits), required for HMAC-SHA256. Set it via `dotnet user-secrets set \"JwtSettings:Secret\" \"<random-value>\"` in development, or an environment variable (JwtSettings__Secret) / secrets manager in production.");
+}
 
 builder.Services
     .AddAuthentication(options =>
@@ -133,7 +149,7 @@ var app = builder.Build();
 
 app.UseSerilogRequestLogging();
 app.UseMiddleware<TreeNote.Api.Middlewares.ExceptionHandlingMiddleware>();
-app.UseCors("AllowAngularDev");
+app.UseCors(app.Environment.IsDevelopment() ? "AllowAngularDev" : "Production");
 
 if (app.Environment.IsDevelopment())
 {
