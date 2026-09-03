@@ -7,6 +7,11 @@
   background-image: radial-gradient(var(--tn-mist) 1px, transparent 1px);
   background-size: 24px 24px;
   cursor: grab;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 
   &:active {
     cursor: grabbing;
@@ -63,5 +68,15 @@
     right: 8px;
     border-radius: var(--tn-radius-lg);
     justify-content: center;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .canvas-container {
+    cursor: default;
+  }
+
+  .canvas-svg {
+    touch-action: none;
   }
 }

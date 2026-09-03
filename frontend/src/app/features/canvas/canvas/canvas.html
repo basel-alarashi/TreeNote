@@ -4,7 +4,11 @@
      (mousedown)="onBackgroundMouseDown($event)"
      (mousemove)="onBackgroundMouseMove($event)"
      (mouseup)="onBackgroundMouseUp($event)"
-     (mouseleave)="onBackgroundMouseUp($event)">
+     (mouseleave)="onBackgroundMouseUp($event)"
+     (touchstart)="onBackgroundTouchStart($event)"
+     (touchmove)="onBackgroundTouchMove($event)"
+     (touchend)="onBackgroundTouchEnd($event)"
+     (touchcancel)="onBackgroundTouchEnd($event)">
   <div class="toolbar">
     <app-connection-status-badge [lastSyncedAt]="lastSyncedAt()"></app-connection-status-badge>
     <app-search-bar (resultSelected)="onSearchResultSelected($event)"></app-search-bar>
@@ -29,6 +33,10 @@
              [attr.aria-label]="topic.title + (selection.isSelected(topic.id) ? ' (selected)' : '')"
              [attr.aria-pressed]="selection.isSelected(topic.id)"
              (mousedown)="onTopicMouseDown($event, topic)"
+             (touchstart)="onTopicTouchStart($event, topic)"
+             (touchmove)="onTopicTouchMove($event)"
+             (touchend)="onTopicTouchEnd($event)"
+             (touchcancel)="onTopicTouchEnd($event)"
              (keydown)="onTopicKeydown($event, topic)"
              (contextmenu)="onTopicContextMenu($event, topic)"></svg:g>
       }

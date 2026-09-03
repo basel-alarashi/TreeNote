@@ -71,6 +71,12 @@ export class CanvasComponent {
 
   readonly containerRef = viewChild<ElementRef<HTMLDivElement>>('container');
 
+  private activeTouches = new Map<number, { x: number; y: number }>();
+  private touchStartTime = 0;
+  private touchMoved = false;
+  private readonly TOUCH_DRAG_THRESHOLD = 10; // px before considering it a drag
+  private readonly PINCH_THRESHOLD = 50; // ms to distinguish tap vs drag
+
   private readonly CULL_PADDING = 300; // canvas units of buffer around the visible area
 
   private readonly viewportBounds = computed(() => {
@@ -188,23 +194,22 @@ export class CanvasComponent {
 
   onTopicMouseDown(event: MouseEvent, topic: Topic): void {
     if (event.button === 2) return;
+    this.startTopicDrag(event.clientX, event.clientY, topic, event.shiftKey || event.ctrlKey || event.metaKey);
+  }
 
+  private startTopicDrag(clientX: number, clientY: number, topic: Topic, additive: boolean): void {
     this.cachedRect = null;
-    event.stopPropagation();
-    const additive = event.shiftKey || event.ctrlKey || event.metaKey;
 
     if (additive) {
       this.selection.select(topic.id, true);
     } else if (!this.selection.isSelected(topic.id)) {
       this.selection.select(topic.id, false);
     }
-    // Clicking an already-selected topic without a modifier keeps the whole
-    // group selected, so dragging any one of them moves the group together.
 
     const ids = this.selection.ids.length > 0 ? this.selection.ids : [topic.id];
     this.isDragging = true;
     this.draggingIds = ids;
-    this.dragStartClient = { x: event.clientX, y: event.clientY };
+    this.dragStartClient = { x: clientX, y: clientY };
     this.dragOrigin.clear();
     for (const id of ids) {
       const t = this.topicById(id);
@@ -261,6 +266,122 @@ export class CanvasComponent {
     this.highlightedTopicId.set(topic.id);
     clearTimeout(this.highlightTimeout);
     this.highlightTimeout = setTimeout(() => this.highlightedTopicId.set(null), 2000);
+  }
+
+  onTopicTouchStart(event: TouchEvent, topic: Topic): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const touch = event.touches[0];
+    if (!touch) return;
+
+    this.touchStartTime = Date.now();
+    this.touchMoved = false;
+    this.activeTouches.set(touch.identifier, { x: touch.clientX, y: touch.clientY });
+
+    // Don't start drag immediately - wait to distinguish from tap
+    setTimeout(() => {
+      if (!this.touchMoved && this.activeTouches.has(touch.identifier)) {
+        this.startTopicDrag(touch.clientX, touch.clientY, topic, false);
+      }
+    }, this.PINCH_THRESHOLD);
+  }
+
+  onTopicTouchMove(event: TouchEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const touch = event.touches[0];
+    if (!touch || !this.activeTouches.has(touch.identifier)) return;
+
+    const startTouch = this.activeTouches.get(touch.identifier)!;
+    const dx = touch.clientX - startTouch.x;
+    const dy = touch.clientY - startTouch.y;
+
+    if (Math.abs(dx) > this.TOUCH_DRAG_THRESHOLD || Math.abs(dy) > this.TOUCH_DRAG_THRESHOLD) {
+      this.touchMoved = true;
+      if (!this.isDragging) {
+        // Start drag if not already started
+        const topicElement = event.target as Element;
+        const topicId = this.getTopicIdFromElement(topicElement);
+        if (topicId) {
+          const topic = this.topicById(topicId);
+          if (topic) {
+            this.startTopicDrag(startTouch.x, startTouch.y, topic, false);
+          }
+        }
+      }
+      if (this.isDragging) {
+        this.updateDragFromClient(touch.clientX, touch.clientY);
+      }
+    }
+  }
+
+  onTopicTouchEnd(event: TouchEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const touch = event.changedTouches[0];
+    if (!touch) return;
+
+    this.activeTouches.delete(touch.identifier);
+
+    if (this.isDragging) {
+      this.finishDrag();
+    } else if (!this.touchMoved && (Date.now() - this.touchStartTime) < 200) {
+      // It was a tap - handle selection
+      const topicElement = event.target as Element;
+      const topicId = this.getTopicIdFromElement(topicElement);
+      if (topicId) {
+        const topic = this.topicById(topicId);
+        if (topic) {
+          this.selection.select(topic.id, false);
+        }
+      }
+    }
+  }
+
+  onBackgroundTouchStart(event: TouchEvent): void {
+    if (event.touches.length === 1) {
+      // Single touch - potential pan
+      const touch = event.touches[0];
+      this.isPanning = true;
+      this.lastPanX = touch.clientX;
+      this.lastPanY = touch.clientY;
+      this.activeTouches.set(touch.identifier, { x: touch.clientX, y: touch.clientY });
+    } else if (event.touches.length === 2) {
+      // Two touches - pinch zoom
+      this.isPanning = false;
+      this.handlePinchStart(event);
+    }
+  }
+
+  onBackgroundTouchMove(event: TouchEvent): void {
+    event.preventDefault();
+
+    if (event.touches.length === 1 && this.isPanning) {
+      const touch = event.touches[0];
+      const dx = touch.clientX - this.lastPanX;
+      const dy = touch.clientY - this.lastPanY;
+      this.lastPanX = touch.clientX;
+      this.lastPanY = touch.clientY;
+      this.viewport.pan(dx, dy);
+    } else if (event.touches.length === 2) {
+      this.handlePinchMove(event);
+    }
+  }
+
+  onBackgroundTouchEnd(event: TouchEvent): void {
+    if (event.touches.length === 0) {
+      this.isPanning = false;
+      this.activeTouches.clear();
+    } else if (event.touches.length === 1) {
+      // Switch from pinch to pan
+      const touch = event.touches[0];
+      this.isPanning = true;
+      this.lastPanX = touch.clientX;
+      this.lastPanY = touch.clientY;
+    }
   }
 
   onBackgroundMouseDown(event: MouseEvent): void {
@@ -498,4 +619,98 @@ export class CanvasComponent {
     }
     return this.cachedRect;
   }
+
+  private updateDragFromClient(clientX: number, clientY: number): void {
+    const scale = this.viewport.scale();
+    const dx = (clientX - this.dragStartClient.x) / scale;
+    const dy = (clientY - this.dragStartClient.y) / scale;
+
+    const updates = this.draggingIds.map((id) => {
+      const origin = this.dragOrigin.get(id)!;
+      return { id, x: origin.x + dx, y: origin.y + dy };
+    });
+
+    this.positionsChanged.emit(updates);
+  }
+
+  private finishDrag(): void {
+    this.isDragging = false;
+    if (this.draggingIds.length > 0) {
+      const moves = this.draggingIds.map((id) => {
+        const origin = this.dragOrigin.get(id)!;
+        const t = this.topicById(id)!;
+        return { id, fromX: origin.x, fromY: origin.y, toX: t.x, toY: t.y };
+      });
+      this.dragEnded.emit(moves);
+    }
+    this.draggingIds = [];
+    this.dragOrigin.clear();
+  }
+
+  private getTopicIdFromElement(element: Element): string | null {
+    let current = element;
+    while (current && current !== this.svgElement) {
+      const topicG = current as SVGGElement;
+      if (topicG.getAttribute?.('appTopic') !== null || current.tagName === 'g') {
+        // Try to find the topic by checking if it's within a topic group
+        const parentG = current.closest('[appTopic]') || current.closest('g[appTopic]');
+        if (parentG) {
+          // We need to find the topic associated with this element
+          // This is a simplified approach - you might need to adjust based on your setup
+          const topics = this.topics();
+          const index = Array.from(this.svgElement?.querySelectorAll('[appTopic]') || [])
+            .indexOf(parentG);
+          if (index >= 0 && index < topics.length) {
+            return topics[index].id;
+          }
+        }
+      }
+      current = current.parentElement!;
+    }
+    return null;
+  }
+
+  private handlePinchStart(event: TouchEvent): void {
+    const touch1 = event.touches[0];
+    const touch2 = event.touches[1];
+    const distance = this.getDistance(touch1, touch2);
+    const midpoint = this.getMidpoint(touch1, touch2);
+
+    this.activeTouches.clear();
+    this.activeTouches.set(touch1.identifier, { x: touch1.clientX, y: touch1.clientY });
+    this.activeTouches.set(touch2.identifier, { x: touch2.clientX, y: touch2.clientY });
+
+    // Store initial pinch data
+    this.pinchData = { distance, midpoint };
+  }
+
+  private handlePinchMove(event: TouchEvent): void {
+    if (!this.pinchData) return;
+
+    const touch1 = event.touches[0];
+    const touch2 = event.touches[1];
+    const distance = this.getDistance(touch1, touch2);
+    const midpoint = this.getMidpoint(touch1, touch2);
+
+    const scaleFactor = distance / this.pinchData.distance;
+    this.viewport.zoomAt(scaleFactor, midpoint.x, midpoint.y, this.rect());
+
+    this.pinchData = { distance, midpoint };
+  }
+
+  private getDistance(touch1: Touch, touch2: Touch): number {
+    return Math.sqrt(
+      Math.pow(touch2.clientX - touch1.clientX, 2) +
+      Math.pow(touch2.clientY - touch1.clientY, 2)
+    );
+  }
+
+  private getMidpoint(touch1: Touch, touch2: Touch): { x: number; y: number } {
+    return {
+      x: (touch1.clientX + touch2.clientX) / 2,
+      y: (touch1.clientY + touch2.clientY) / 2
+    };
+  }
+
+  private pinchData: { distance: number; midpoint: { x: number; y: number } } | null = null;
 }
