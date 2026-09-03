@@ -61,6 +61,7 @@ html {
   --mdc-outlined-text-field-focus-outline-color: var(--tn-canopy);
   --mdc-outlined-text-field-label-text-color: var(--tn-ink-soft);
   --mdc-outlined-text-field-focus-label-text-color: var(--tn-canopy);
+  --mat-snack-bar-button-color: var(--tn-canopy);
 }
 
 // mat-menu portals to an overlay outside the component tree — must be global.
@@ -86,4 +87,14 @@ html {
 
 .cdk-overlay-popover {
   transition: none !important;
+}
+
+.mat-mdc-snack-bar-actions {
+  .mdc-button__label {
+    transition: none;
+  }
+
+  button:hover > .mdc-button__label {
+    color: var(--tn-paper);
+  }
 }
