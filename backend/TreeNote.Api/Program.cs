@@ -22,6 +22,13 @@ if (!string.IsNullOrEmpty(port))
     builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 }
 
+// Disable file watching entirely in production
+var reloadOnChange = !builder.Environment.IsProduction();
+
+builder.Configuration
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: reloadOnChange)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: reloadOnChange);
+
 // Serilog: structured logging to console + rolling file, configured from appsettings.
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
