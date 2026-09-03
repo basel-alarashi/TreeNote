@@ -23,17 +23,18 @@ public class TopicService : ITopicService
         _relationshipCleanup = relationshipCleanup;
     }
 
-    public async Task<TopicDto> GetByIdAsync(Guid id)
+    public async Task<TopicDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var topic = await GetTrackedOwnedTopicAsync(id);
+        var topic = await GetTrackedOwnedTopicAsync(id, cancellationToken);
         return ToDto(topic);
     }
 
-    public async Task<TopicDto> CreateAsync(CreateTopicCommand command)
+    public async Task<TopicDto> CreateAsync(CreateTopicCommand command, CancellationToken cancellationToken = default)
     {
         var canvas = await _context.Canvases
             .Include(c => c.Workspace)
-            .FirstOrDefaultAsync(c => c.Id == command.CanvasId);
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Id == command.CanvasId, cancellationToken);
 
         if (canvas is null) throw new NotFoundException($"Canvas '{command.CanvasId}' was not found.");
         if (canvas.Workspace.UserId != _currentUser.UserId) throw new ForbiddenAccessException();
@@ -51,7 +52,7 @@ public class TopicService : ITopicService
 
         if (command.ParentId is { } parentId)
         {
-            var parent = await _context.Topics.FirstOrDefaultAsync(t => t.Id == parentId);
+            var parent = await _context.Topics.AsNoTracking().FirstOrDefaultAsync(t => t.Id == parentId, cancellationToken);
             if (parent is null) throw new NotFoundException($"Parent topic '{parentId}' was not found.");
             if (parent.CanvasId != command.CanvasId)
                 throw new BusinessRuleException("Parent topic must belong to the same canvas.");
@@ -59,13 +60,13 @@ public class TopicService : ITopicService
             _context.Relationships.Add(new Relationship { ParentId = parentId, ChildId = topic.Id });
         }
 
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
         return ToDto(topic);
     }
 
-    public async Task<TopicDto> UpdateAsync(Guid id, UpdateTopicCommand command)
+    public async Task<TopicDto> UpdateAsync(Guid id, UpdateTopicCommand command, CancellationToken cancellationToken = default)
     {
-        var topic = await GetTrackedOwnedTopicAsync(id);
+        var topic = await GetTrackedOwnedTopicAsync(id, cancellationToken);
 
         _context.Entry(topic).Property(t => t.RowVersion).OriginalValue = command.RowVersion;
 
@@ -76,7 +77,7 @@ public class TopicService : ITopicService
 
         try
         {
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
         }
         catch (DbUpdateConcurrencyException)
         {
@@ -86,7 +87,7 @@ public class TopicService : ITopicService
         return ToDto(topic);
     }
 
-    public async Task<List<TopicDto>> UpdatePositionsAsync(UpdateTopicPositionsCommand command)
+    public async Task<List<TopicDto>> UpdatePositionsAsync(UpdateTopicPositionsCommand command, CancellationToken cancellationToken = default)
     {
         var ids = command.Positions.Select(p => p.Id).ToList();
 
@@ -94,7 +95,7 @@ public class TopicService : ITopicService
             .Include(t => t.Canvas).ThenInclude(c => c.Workspace)
             .AsTracking()
             .Where(t => ids.Contains(t.Id))
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         if (topics.Count != ids.Count)
             throw new NotFoundException("One or more topics were not found.");
@@ -115,7 +116,7 @@ public class TopicService : ITopicService
 
         try
         {
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
         }
         catch (DbUpdateConcurrencyException)
         {
@@ -125,15 +126,15 @@ public class TopicService : ITopicService
         return topics.Select(ToDto).ToList();
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var topic = await GetTrackedOwnedTopicAsync(id);
+        var topic = await GetTrackedOwnedTopicAsync(id, cancellationToken);
 
         try
         {
-            await _relationshipCleanup.RemoveRelationshipsForTopicsAsync(new[] { id });
+            await _relationshipCleanup.RemoveRelationshipsForTopicsAsync(new[] { id }, cancellationToken);
             _context.Topics.Remove(topic);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
         }
         catch (DbUpdateConcurrencyException)
         {
@@ -141,9 +142,9 @@ public class TopicService : ITopicService
         }
     }
 
-    public async Task<TopicDto> DuplicateAsync(Guid id)
+    public async Task<TopicDto> DuplicateAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var source = await GetTrackedOwnedTopicAsync(id);
+        var source = await GetTrackedOwnedTopicAsync(id, cancellationToken);
 
         // Duplicates the single node only, offset slightly, with no relationships —
         // not a recursive subtree clone. Revisit if the product intent is "duplicate branch."
@@ -158,16 +159,16 @@ public class TopicService : ITopicService
         };
 
         _context.Topics.Add(copy);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
         return ToDto(copy);
     }
 
-    private async Task<Topic> GetTrackedOwnedTopicAsync(Guid id)
+    private async Task<Topic> GetTrackedOwnedTopicAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var topic = await _context.Topics
             .Include(t => t.Canvas).ThenInclude(c => c.Workspace)
             .AsTracking()
-            .FirstOrDefaultAsync(t => t.Id == id);
+            .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
 
         if (topic is null) throw new NotFoundException($"Topic '{id}' was not found.");
         if (topic.Canvas.Workspace.UserId != _currentUser.UserId) throw new ForbiddenAccessException();

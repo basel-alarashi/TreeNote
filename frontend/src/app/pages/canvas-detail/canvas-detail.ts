@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -12,7 +12,7 @@ import { HistoryService } from '../../services/canvas/history.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { OfflineStorageService } from '../../services/offline/offline-storage.service';
 import { ConnectivityService } from '../../services/offline/connectivity.service';
-import { TopicItemComponent } from '../../features/topic/topic-item/topic-item';
+// import { TopicItemComponent } from '../../features/topic/topic-item/topic-item';
 import { CanvasComponent } from '../../features/canvas/canvas/canvas';
 import { CanvasDetail } from '../../models/canvas/canvas.model';
 import { CreateTopicCommand, Topic } from '../../models/topic.model';
@@ -23,7 +23,8 @@ import { forkJoin, concatMap, from, toArray, finalize, Observable } from 'rxjs';
 @Component({
   selector: 'app-canvas-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, TopicItemComponent, CanvasComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [CommonModule, FormsModule, MatButtonModule, MatFormFieldModule, MatInputModule/*, TopicItemComponent*/, CanvasComponent],
   templateUrl: './canvas-detail.html',
   styleUrl: './canvas-detail.scss',
 })

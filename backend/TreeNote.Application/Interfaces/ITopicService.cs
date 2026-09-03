@@ -5,10 +5,10 @@ namespace TreeNote.Application.Interfaces;
 
 public interface ITopicService
 {
-    Task<TopicDto> GetByIdAsync(Guid id);
-    Task<TopicDto> CreateAsync(CreateTopicCommand command);
-    Task<TopicDto> UpdateAsync(Guid id, UpdateTopicCommand command);
-    Task<List<TopicDto>> UpdatePositionsAsync(UpdateTopicPositionsCommand command);
-    Task DeleteAsync(Guid id);
-    Task<TopicDto> DuplicateAsync(Guid id);
+    Task<TopicDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<TopicDto> CreateAsync(CreateTopicCommand command, CancellationToken cancellationToken = default);
+    Task<TopicDto> UpdateAsync(Guid id, UpdateTopicCommand command, CancellationToken cancellationToken = default);
+    Task<List<TopicDto>> UpdatePositionsAsync(UpdateTopicPositionsCommand command, CancellationToken cancellationToken = default);
+    Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<TopicDto> DuplicateAsync(Guid id, CancellationToken cancellationToken = default);
 }

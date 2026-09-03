@@ -1,4 +1,4 @@
-<div class="status-badge" [class.status-badge--offline]="!isOnline()">
+<div class="status-badge" role="status" [class.status-badge--offline]="!isOnline()">
   <span class="status-badge__dot" [class.status-badge__dot--online]="isOnline()"></span>
   <span class="status-badge__label">{{ icon() }} {{ label() }}</span>
   <span class="status-badge__sync-time">{{ lastSyncedLabel() }}</span>

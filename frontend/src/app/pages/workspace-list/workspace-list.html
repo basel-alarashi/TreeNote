@@ -15,13 +15,13 @@
   @for (workspace of workspaces(); track workspace.id) {
   <mat-list-item>
     @if (editingId === workspace.id) {
-    <input [(ngModel)]="editingName" (keyup.enter)="confirmRename()" />
-    <button mat-icon-button (click)="confirmRename()"><mat-icon>check</mat-icon></button>
-    <button mat-icon-button (click)="cancelRename()"><mat-icon>close</mat-icon></button>
+    <input [(ngModel)]="editingName" (keyup.enter)="confirmRename()" aria-label="Rename {{ workspace.name }}" />
+    <button mat-icon-button (click)="confirmRename()" aria-label="Confirm rename"><mat-icon>check</mat-icon></button>
+    <button mat-icon-button (click)="cancelRename()" aria-label="Cancel rename"><mat-icon>close</mat-icon></button>
     } @else {
     <a [routerLink]="['/workspaces', workspace.id, 'canvases']">{{ workspace.name }}</a>
-    <button mat-icon-button (click)="startRename(workspace)"><mat-icon>edit</mat-icon></button>
-    <button mat-icon-button (click)="remove(workspace.id)"><mat-icon>delete</mat-icon></button>
+    <button mat-icon-button (click)="startRename(workspace)" aria-label="Rename {{ workspace.name }}"><mat-icon>edit</mat-icon></button>
+    <button mat-icon-button (click)="remove(workspace.id)" aria-label="Delete {{ workspace.name }}"><mat-icon>delete</mat-icon></button>
     }
   </mat-list-item>
   }

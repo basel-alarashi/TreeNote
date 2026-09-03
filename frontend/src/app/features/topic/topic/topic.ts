@@ -1,11 +1,13 @@
-import { Component, HostBinding, input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, HostBinding, input } from '@angular/core';
 import { Topic } from '../../../models/topic.model';
 import { TOPIC_WIDTH, TOPIC_HEIGHT } from '../../../models/canvas/canvas-view.constants';
 
 @Component({
   selector: '[appTopic]',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './topic.html',
+  styleUrl: './topic.scss',
 })
 export class TopicComponent {
   readonly topic = input.required<Topic>();

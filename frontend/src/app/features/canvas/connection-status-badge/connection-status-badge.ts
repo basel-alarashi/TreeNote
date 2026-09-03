@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { ConnectivityService } from '../../../services/offline/connectivity.service';
 import { SyncStatusService } from '../../../services/offline/sync-status.service';
 import { PendingChangesService } from '../../../services/offline/pending-changes.service';
@@ -7,6 +7,7 @@ import { PendingChangesService } from '../../../services/offline/pending-changes
 @Component({
   selector: 'app-connection-status-badge',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   templateUrl: './connection-status-badge.html',
   styleUrl: './connection-status-badge.scss'
@@ -31,6 +32,12 @@ export class ConnectionStatusBadgeComponent {
 
   readonly label = computed(() => {
     if (!this.isOnline()) return 'Offline';
+
+    const stuckCount = this.syncStatus.stuckCount();
+    if (stuckCount > 0) {
+      return `⚠️ ${stuckCount} stuck item${stuckCount > 1 ? 's' : ''}`;
+    }
+
     switch (this.syncStatus.state()) {
       case 'syncing': return 'Syncing…';
       case 'error': return 'Sync error';

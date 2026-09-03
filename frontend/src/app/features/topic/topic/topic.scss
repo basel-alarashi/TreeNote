@@ -1,0 +1,32 @@
+:host {
+  cursor: grab;
+}
+
+  :host:focus-visible {
+    outline: 2px solid var(--tn-canopy);
+    outline-offset: 2px;
+  }
+
+.topic-node {
+  fill: var(--tn-paper-raised);
+  stroke: var(--tn-mist);
+  stroke-width: 1.5;
+  transition: stroke 0.15s ease, stroke-width 0.15s ease;
+}
+
+:host:hover .topic-node:not(.topic-node--selected) {
+  stroke: var(--tn-moss);
+}
+
+.topic-node--selected {
+  stroke: var(--tn-canopy);
+  stroke-width: 2.5;
+}
+
+.topic-node__label {
+  font-family: var(--tn-font-body);
+  font-size: 14px;
+  fill: var(--tn-ink);
+  pointer-events: none;
+  user-select: none;
+}

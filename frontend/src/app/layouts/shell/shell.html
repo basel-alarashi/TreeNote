@@ -1,13 +1,16 @@
 <mat-toolbar color="primary">
+  @if (isMobile()) {
+  <button mat-icon-button (click)="toggleSidenav()"><mat-icon>menu</mat-icon></button>
+  }
   <span>TreeNote</span>
 </mat-toolbar>
 
 <mat-sidenav-container class="shell-container">
-  <mat-sidenav mode="side" opened>
+  <mat-sidenav [mode]="isMobile() ? 'over' : 'side'" [opened]="!isMobile() || sidenavOpen()">
     <mat-nav-list>
-      <a mat-list-item routerLink="#" (click)="logout()">Logout</a>
-      <a mat-list-item routerLink="/workspaces">Workspaces</a>
-      <a mat-list-item routerLink="/profile">Profile</a>
+      <a mat-list-item class="mat-nav-link" (click)="logout()">Logout</a>
+      <a mat-list-item class="mat-nav-link" routerLink="/workspaces" routerLinkActive="active">Workspaces</a>
+      <a mat-list-item class="mat-nav-link" routerLink="/profile" routerLinkActive="active">Profile</a>
     </mat-nav-list>
   </mat-sidenav>
 

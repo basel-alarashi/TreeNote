@@ -19,10 +19,10 @@
         </mat-form-field>
 
         @if (profileMessage()) {
-        <p class="info-text">{{ profileMessage() }}</p>
+        <p class="info-text" role="status">{{ profileMessage() }}</p>
         }
 
-        <button mat-flat-button color="primary" type="submit" [disabled]="isSavingProfile()">
+        <button mat-raised-button class="profile-button" color="primary" type="submit" [disabled]="isSavingProfile()">
           Save Changes
         </button>
       </form>
@@ -63,13 +63,13 @@
         </mat-form-field>
 
         @if (passwordMessage()) {
-        <p class="info-text">{{ passwordMessage() }}</p>
+        <p class="info-text" role="status">{{ passwordMessage() }}</p>
         }
         @if (passwordError()) {
-        <p class="error-text">{{ passwordError() }}</p>
+        <p class="error-text" role="alert">{{ passwordError() }}</p>
         }
 
-        <button mat-flat-button color="primary" type="submit" [disabled]="isSavingPassword()">
+        <button mat-raised-button class="profile-button" color="primary" type="submit" [disabled]="isSavingPassword()">
           Change Password
         </button>
       </form>

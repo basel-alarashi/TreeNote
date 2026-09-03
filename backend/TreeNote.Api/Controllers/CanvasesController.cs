@@ -15,29 +15,29 @@ public class CanvasesController : ControllerBase
     public CanvasesController(ICanvasService canvasService) => _canvasService = canvasService;
 
     [HttpGet]
-    public async Task<ActionResult<List<CanvasDto>>> GetByWorkspace([FromQuery] Guid? workspaceId)
+    public async Task<ActionResult<List<CanvasDto>>> GetByWorkspace([FromQuery] Guid? workspaceId, CancellationToken cancellationToken)
     {
         if (workspaceId is null) return BadRequest("workspaceId query parameter is required.");
-        return Ok(await _canvasService.GetByWorkspaceAsync(workspaceId.Value));
+        return Ok(await _canvasService.GetByWorkspaceAsync(workspaceId.Value, cancellationToken));
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<CanvasDetailDto>> GetById(Guid id) => Ok(await _canvasService.GetByIdAsync(id));
+    public async Task<ActionResult<CanvasDetailDto>> GetById(Guid id, CancellationToken cancellationToken) => Ok(await _canvasService.GetByIdAsync(id, cancellationToken));
 
     [HttpPost]
-    public async Task<ActionResult<CanvasDto>> Create(CreateCanvasCommand command)
+    public async Task<ActionResult<CanvasDto>> Create(CreateCanvasCommand command, CancellationToken cancellationToken)
     {
-        var result = await _canvasService.CreateAsync(command);
+        var result = await _canvasService.CreateAsync(command, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<ActionResult<CanvasDto>> Update(Guid id, UpdateCanvasCommand command) => Ok(await _canvasService.UpdateAsync(id, command));
+    public async Task<ActionResult<CanvasDto>> Update(Guid id, UpdateCanvasCommand command, CancellationToken cancellationToken) => Ok(await _canvasService.UpdateAsync(id, command, cancellationToken));
 
     [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        await _canvasService.DeleteAsync(id);
+        await _canvasService.DeleteAsync(id, cancellationToken);
         return NoContent();
     }
 }

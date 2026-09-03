@@ -25,7 +25,7 @@ public sealed class SearchService : ISearchService
         }
 
         var userId = _currentUserService.UserId;
-        var normalizedQuery = query.Trim().ToLower();
+        var normalizedQuery = query.Trim();
 
         // Topic -> Canvas -> Workspace ownership chain enforces NFR-SEC-004 /
         // BR-002 (users cannot access another user's data) at the query level,
@@ -33,7 +33,7 @@ public sealed class SearchService : ISearchService
         return await _context.Topics
             .AsNoTracking()
             .Where(topic => topic.Canvas.Workspace.UserId == userId)
-            .Where(topic => topic.Title.ToLower().Contains(normalizedQuery))
+            .Where(topic => topic.Title.Contains(normalizedQuery))
             .OrderBy(topic => topic.Title)
             .Select(topic => new SearchTopicDto
             {

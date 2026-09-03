@@ -15,16 +15,16 @@ public class RelationshipsController : ControllerBase
     public RelationshipsController(IRelationshipService relationshipService) => _relationshipService = relationshipService;
 
     [HttpPost]
-    public async Task<ActionResult<RelationshipDto>> Create(CreateRelationshipCommand command)
+    public async Task<ActionResult<RelationshipDto>> Create(CreateRelationshipCommand command, CancellationToken cancellationToken)
     {
-        var result = await _relationshipService.CreateAsync(command);
+        var result = await _relationshipService.CreateAsync(command, cancellationToken);
         return StatusCode(StatusCodes.Status201Created, result);
     }
 
     [HttpDelete]
-    public async Task<IActionResult> Delete(DeleteRelationshipCommand command)
+    public async Task<IActionResult> Delete(DeleteRelationshipCommand command, CancellationToken cancellationToken)
     {
-        await _relationshipService.DeleteAsync(command);
+        await _relationshipService.DeleteAsync(command, cancellationToken);
         return NoContent();
     }
 }

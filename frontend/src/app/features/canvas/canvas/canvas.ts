@@ -1,8 +1,9 @@
-import { Component, ElementRef, HostListener, inject, input, output, signal, viewChild, effect, ViewChild } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ElementRef, HostListener, inject, input, output, signal, viewChild, effect, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ViewportService } from '../../../services/canvas/viewport.service';
 import { SelectionService } from '../../../services/canvas/selection.service';
 import { HistoryService } from '../../../services/canvas/history.service';
@@ -23,11 +24,13 @@ const FOCUS_PADDING = 200;
 @Component({
   selector: 'app-canvas',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     MatButtonModule,
     MatIconModule,
     MatMenuModule,
+    MatTooltipModule,
     TopicComponent,
     ConnectorComponent,
     SelectionBoxComponent,
@@ -66,7 +69,44 @@ export class CanvasComponent {
   readonly copyRequested = output<string[]>();
   readonly pasteRequested = output<void>();
 
-  private readonly containerRef = viewChild.required<ElementRef<HTMLDivElement>>('container');
+  readonly containerRef = viewChild<ElementRef<HTMLDivElement>>('container');
+
+  private readonly CULL_PADDING = 300; // canvas units of buffer around the visible area
+
+  private readonly viewportBounds = computed(() => {
+    const el = this.containerRef()?.nativeElement;
+    if (!el) return null;
+    const rect = el.getBoundingClientRect();
+    const scale = this.viewport.scale();
+    const tx = this.viewport.translateX();
+    const ty = this.viewport.translateY();
+    return {
+      minX: -tx / scale - this.CULL_PADDING,
+      minY: -ty / scale - this.CULL_PADDING,
+      maxX: (rect.width - tx) / scale + this.CULL_PADDING,
+      maxY: (rect.height - ty) / scale + this.CULL_PADDING,
+    };
+  });
+
+  readonly visibleTopics = computed(() => {
+    const bounds = this.viewportBounds();
+    const all = this.topics();
+    if (!bounds) return all;
+    return all.filter(t =>
+      t.x + TOPIC_WIDTH >= bounds.minX && t.x <= bounds.maxX &&
+      t.y + TOPIC_HEIGHT >= bounds.minY && t.y <= bounds.maxY
+    );
+  });
+
+  readonly visibleRelationships = computed(() => {
+    const bounds = this.viewportBounds();
+    const rels = this.relationships();
+    if (!bounds) return rels;
+    const visibleIds = new Set(this.visibleTopics().map(t => t.id));
+    // keep an edge if EITHER endpoint is visible — cheap approximation,
+    // acceptable since concept-map parent/child pairs are typically near each other.
+    return rels.filter(r => visibleIds.has(r.parentId) || visibleIds.has(r.childId));
+  });
 
   // Panning
   private isPanning = false;
@@ -101,6 +141,7 @@ export class CanvasComponent {
 
   private lastFocusedTopicId: string | null = null;
   private highlightTimeout?: ReturnType<typeof setTimeout>;
+  private cachedRect: DOMRect | null = null;
 
   constructor() {
     // Re-attempts focusing whenever the pending topic id or the loaded topic
@@ -141,33 +182,14 @@ export class CanvasComponent {
     this.focusTopic(topic);
   }
 
-  private focusTopic(topic: Topic): void {
-    this.selection.select(topic.id, false);
-
-    const bounds = {
-      minX: topic.x - FOCUS_PADDING,
-      minY: topic.y - FOCUS_PADDING,
-      maxX: topic.x + TOPIC_WIDTH + FOCUS_PADDING,
-      maxY: topic.y + TOPIC_HEIGHT + FOCUS_PADDING,
-    };
-    this.viewport.fitToScreen(bounds, this.rect());
-
-    this.highlightedTopicId.set(topic.id);
-    clearTimeout(this.highlightTimeout);
-    this.highlightTimeout = setTimeout(() => this.highlightedTopicId.set(null), 2000);
-  }
-
   topicById(id: string): Topic | undefined {
     return this.topics().find((t) => t.id === id);
   }
 
-  onWheel(event: WheelEvent): void {
-    event.preventDefault();
-    const factor = event.deltaY < 0 ? 1.1 : 1 / 1.1;
-    this.viewport.zoomAt(factor, event.clientX, event.clientY, this.rect());
-  }
-
   onTopicMouseDown(event: MouseEvent, topic: Topic): void {
+    if (event.button === 2) return;
+
+    this.cachedRect = null;
     event.stopPropagation();
     const additive = event.shiftKey || event.ctrlKey || event.metaKey;
 
@@ -190,7 +212,62 @@ export class CanvasComponent {
     }
   }
 
+  onTopicKeydown(event: KeyboardEvent, topic: Topic): void {
+    const additive = event.shiftKey || event.ctrlKey || event.metaKey;
+
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      event.stopPropagation();
+      this.selection.select(topic.id, additive);
+      return;
+    }
+
+    const step = event.shiftKey ? 20 : 4;
+    let dx = 0, dy = 0;
+    switch (event.key) {
+      case 'ArrowUp': dy = -step; break;
+      case 'ArrowDown': dy = step; break;
+      case 'ArrowLeft': dx = -step; break;
+      case 'ArrowRight': dx = step; break;
+      default: return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+
+    const ids = this.selection.isSelected(topic.id) && this.selection.ids.length > 0
+      ? this.selection.ids
+      : [topic.id];
+
+    const moves = ids.map((id) => {
+      const t = this.topicById(id)!;
+      return { id, fromX: t.x, fromY: t.y, toX: t.x + dx, toY: t.y + dy };
+    });
+
+    this.positionsChanged.emit(moves.map((m) => ({ id: m.id, x: m.toX, y: m.toY })));
+    this.dragEnded.emit(moves);
+  }
+
+  private focusTopic(topic: Topic): void {
+    this.selection.select(topic.id, false);
+
+    const bounds = {
+      minX: topic.x - FOCUS_PADDING,
+      minY: topic.y - FOCUS_PADDING,
+      maxX: topic.x + TOPIC_WIDTH + FOCUS_PADDING,
+      maxY: topic.y + TOPIC_HEIGHT + FOCUS_PADDING,
+    };
+    this.viewport.fitToScreen(bounds, this.rect());
+
+    this.highlightedTopicId.set(topic.id);
+    clearTimeout(this.highlightTimeout);
+    this.highlightTimeout = setTimeout(() => this.highlightedTopicId.set(null), 2000);
+  }
+
   onBackgroundMouseDown(event: MouseEvent): void {
+    if (event.button === 2) return;
+
+    this.cachedRect = null;
+
     if (event.shiftKey) {
       this.isSelecting = true;
       this.selectionStartCanvas = this.viewport.screenToCanvas(event.clientX, event.clientY, this.rect());
@@ -222,7 +299,9 @@ export class CanvasComponent {
     this.viewport.pan(dx, dy);
   }
 
-  onBackgroundMouseUp(): void {
+  onBackgroundMouseUp(event: MouseEvent): void {
+    if (event.button === 2) return;
+
     if (this.isDragging) {
       this.isDragging = false;
       if (this.draggingIds.length > 0) {
@@ -250,17 +329,29 @@ export class CanvasComponent {
     this.isPanning = false;
   }
 
+  onWheel(event: WheelEvent): void {
+    event.preventDefault();
+    const factor = event.deltaY < 0 ? 1.1 : 1 / 1.1;
+    this.viewport.zoomAt(factor, event.clientX, event.clientY, this.rect());
+  }
+
+  private lastContextMenuTarget: SVGGElement | null = null;
+
   onTopicContextMenu(event: MouseEvent, topic: Topic): void {
     event.preventDefault();
     event.stopPropagation();
+    this.lastContextMenuTarget = event.currentTarget as SVGGElement;
 
     if (!this.selection.isSelected(topic.id)) {
       this.selection.select(topic.id, false);
     }
-
     this.contextMenuTopicId.set(topic.id);
     this.contextMenuPosition.set({ x: event.clientX, y: event.clientY });
-    setTimeout(() => this.menuTrigger().openMenu());
+    setTimeout(() => this.menuTrigger().openMenu(), 300);
+  }
+
+  onContextMenuClosed(): void {
+    this.lastContextMenuTarget?.focus();
   }
 
   private menuTargetIds(): string[] {
@@ -294,6 +385,11 @@ export class CanvasComponent {
   duplicateFromMenu(): void {
     const ids = this.menuTargetIds();
     if (ids.length) this.duplicateRequested.emit(ids);
+  }
+
+  @HostListener('window:resize')
+  onResize(): void {
+    this.cachedRect = null;
   }
 
   @HostListener('window:keydown', ['$event'])
@@ -396,6 +492,10 @@ export class CanvasComponent {
   }
 
   private rect(): DOMRect {
-    return this.containerRef().nativeElement.getBoundingClientRect();
+    if (!this.cachedRect) {
+      const el = this.containerRef()?.nativeElement;
+      this.cachedRect = el ? el.getBoundingClientRect() : new DOMRect();
+    }
+    return this.cachedRect;
   }
 }

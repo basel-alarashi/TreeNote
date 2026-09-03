@@ -5,14 +5,21 @@
     <mat-label>New canvas name</mat-label>
     <input matInput [(ngModel)]="newCanvasName" (keyup.enter)="create()" />
   </mat-form-field>
-  <button mat-raised-button color="primary" (click)="create()">Create</button>
+  <button mat-raised-button class="create-row-button" color="primary" (click)="create()">Create</button>
 </div>
 
 <mat-nav-list>
   @for (canvas of canvases(); track canvas.id) {
   <mat-list-item>
+    @if (editingId === canvas.id) {
+    <input [(ngModel)]="editingName" (keyup.enter)="confirmRename()" aria-label="Rename {{ canvas.name }}" />
+    <button mat-icon-button (click)="confirmRename()" aria-label="Confirm rename"><mat-icon>check</mat-icon></button>
+    <button mat-icon-button (click)="cancelRename()" aria-label="Cancel rename"><mat-icon>close</mat-icon></button>
+    } @else {
     <a [routerLink]="['/workspaces', workspaceId(), 'canvases', canvas.id]">{{ canvas.name }}</a>
-    <button mat-icon-button (click)="remove(canvas.id)"><mat-icon>delete</mat-icon></button>
+    <button mat-icon-button (click)="startRename(canvas)" aria-label="Rename {{ canvas.name }}"><mat-icon>edit</mat-icon></button>
+    <button mat-icon-button (click)="remove(canvas.id)" aria-label="Delete {{ canvas.name }}"><mat-icon>delete</mat-icon></button>
+    }
   </mat-list-item>
   }
 </mat-nav-list>

@@ -1,26 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, tap, catchError, of, map } from 'rxjs';
-import { jwtDecode } from 'jwt-decode';
+import { Observable, tap, catchError, of, shareReplay, finalize, firstValueFrom, BehaviorSubject, filter, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { TokenStorageService } from './token-storage.service';
-import {
-  AuthResult,
-  CurrentUser,
-  GoogleLoginRequest,
-  LoginRequest,
-  RefreshTokenRequest,
-  RegisterRequest
-} from './auth.models';
+import { AuthResult, CurrentUser, GoogleLoginRequest, LoginRequest, RegisterRequest } from './auth.models';
 import { SocialAuthService } from '@abacritt/angularx-social-login';
 import { OfflineStorageService } from '../../services/offline/offline-storage.service';
-
-interface JwtPayload {
-  sub: string;
-  email: string;
-  exp: number;
-}
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -29,73 +15,97 @@ export class AuthService {
   readonly currentUser = computed(() => this.currentUserSignal());
   readonly isAuthenticated = computed(() => this.currentUserSignal() !== null);
 
+  private refreshInProgress$: Observable<AuthResult | null> | null = null;
+  private authReady = new BehaviorSubject<boolean>(false);
+  readonly authReady$ = this.authReady.asObservable();
+
   constructor(
     private readonly http: HttpClient,
     private readonly tokenStorage: TokenStorageService,
     private readonly offlineStorage: OfflineStorageService,
     private readonly router: Router,
     private readonly socialAuthService: SocialAuthService
-  ) {
-    this.restoreSession();
+  ) { }
+
+  async initializeAuth(): Promise<void> {
+    try {
+      const result = await firstValueFrom(this.refreshToken());
+      if (result) {
+        this.authReady.next(true);
+      } else {
+        // No valid refresh token, but don't redirect yet
+        this.authReady.next(true); // Auth check is complete
+      }
+    } catch (error) {
+      // Handle initialization error
+      this.authReady.next(true);
+    }
   }
 
-  register(request: RegisterRequest): Observable<AuthResult> {
-    return this.http
-      .post<AuthResult>(`${environment.apiUrl}/auth/register`, request)
-      .pipe(tap((result) => this.handleAuthResult(result)));
+  register(request: RegisterRequest): Observable<unknown> {
+    return this.http.post(`${environment.apiUrl}/auth/register`, request);
   }
 
   login(request: LoginRequest): Observable<AuthResult> {
     return this.http
-      .post<AuthResult>(`${environment.apiUrl}/auth/login`, request)
+      .post<AuthResult>(`${environment.apiUrl}/auth/login`, request, { withCredentials: true })
       .pipe(tap((result) => this.handleAuthResult(result)));
   }
 
   loginWithGoogle(request: GoogleLoginRequest): Observable<AuthResult> {
     return this.http
-      .post<AuthResult>(`${environment.apiUrl}/auth/google`, request)
+      .post<AuthResult>(`${environment.apiUrl}/auth/google`, request, { withCredentials: true })
       .pipe(tap((result) => this.handleAuthResult(result)));
   }
 
   refreshToken(): Observable<AuthResult | null> {
-    const refreshToken = this.tokenStorage.getRefreshToken();
-    if (!refreshToken) {
-      return of(null);
+    if (this.refreshInProgress$) {
+      return this.refreshInProgress$;
     }
 
-    const body: RefreshTokenRequest = { refreshToken };
-
-    return this.http.post<AuthResult>(`${environment.apiUrl}/auth/refresh`, body).pipe(
-      tap((result) => this.handleAuthResult(result)),
-      catchError(() => {
-        this.clearSession();
+    const request$ = this.http.post<AuthResult>(
+      `${environment.apiUrl}/auth/refresh`,
+      {},
+      {
+        withCredentials: true,
+        // Add these headers explicitly
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      }
+    ).pipe(
+      tap((result) => {
+        this.handleAuthResult(result);
+      }),
+      catchError((error) => {
+        console.error('Refresh token failed:', error);
+        // Don't clear session here, just return null
         return of(null);
-      })
+      }),
+      finalize(() => {
+        this.refreshInProgress$ = null;
+      }),
+      shareReplay(1)
     );
+
+    this.refreshInProgress$ = request$;
+    return request$;
   }
 
   logout(): void {
-    console.log('Log out Called.');
-    const refreshToken = this.tokenStorage.getRefreshToken();
-
-    if (refreshToken) {
-      this.http
-        .post(`${environment.apiUrl}/auth/logout`, { refreshToken })
-        .pipe(catchError(() => of(null)))
-        .subscribe();
-    }
+    this.http
+      .post(`${environment.apiUrl}/auth/logout`, {}, { withCredentials: true })
+      .pipe(catchError(() => of(null)))
+      .subscribe();
 
     this.clearSession();
 
-    // Tear down Google's client-side session too — otherwise authState
-    // keeps replaying the last signed-in user, silently re-authenticating
-    // the moment /login re-subscribes to it.
     this.socialAuthService.signOut().catch(() => {
       // No-op: throws if the user never had a Google session this visit.
     });
 
     this.offlineStorage.clearAllLocalData();
-
     this.router.navigate(['/login']);
   }
 
@@ -107,45 +117,20 @@ export class AuthService {
     return this.currentUser()?.userId ?? null;
   }
 
-  /** Restores session on app startup from a persisted refresh token. */
-  private restoreSession(): void {
-    const accessToken = this.tokenStorage.getAccessToken();
-    const refreshToken = this.tokenStorage.getRefreshToken();
-
-    if (!refreshToken) {
-      return;
-    }
-
-    if (accessToken && !this.isExpired(accessToken)) {
-      this.setCurrentUserFromToken(accessToken);
-      return;
-    }
-
-    // Access token missing/expired but we have a refresh token — try silently.
-    this.refreshToken().subscribe();
+  whenReady(): Promise<boolean> {
+    return firstValueFrom(this.authReady$.pipe(
+      filter(ready => ready),
+      map(() => this.isAuthenticated())
+    ));
   }
 
   private handleAuthResult(result: AuthResult): void {
-    this.tokenStorage.setTokens(result.accessToken, result.refreshToken);
+    this.tokenStorage.setAccessToken(result.accessToken);
     this.currentUserSignal.set({ userId: result.userId, email: result.email });
   }
 
   private clearSession(): void {
     this.tokenStorage.clear();
     this.currentUserSignal.set(null);
-  }
-
-  private setCurrentUserFromToken(accessToken: string): void {
-    const payload = jwtDecode<JwtPayload>(accessToken);
-    this.currentUserSignal.set({ userId: payload.sub, email: payload.email });
-  }
-
-  private isExpired(accessToken: string): boolean {
-    try {
-      const payload = jwtDecode<JwtPayload>(accessToken);
-      return Date.now() >= payload.exp * 1000;
-    } catch {
-      return true;
-    }
   }
 }

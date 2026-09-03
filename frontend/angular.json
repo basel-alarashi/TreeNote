@@ -47,7 +47,13 @@
                   "maximumError": "8kB"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ]
             },
             "development": {
               "optimization": false,
@@ -72,6 +78,11 @@
             "development": {
               "buildTarget": "frontend:build:development"
             }
+          },
+          "options": {
+            "ssl": true,
+            "sslKey": "ssl/private.key",
+            "sslCert": "ssl/certificate.crt"
           },
           "defaultConfiguration": "development"
         },
