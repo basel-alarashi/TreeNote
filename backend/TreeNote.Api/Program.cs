@@ -27,7 +27,8 @@ var reloadOnChange = !builder.Environment.IsProduction();
 
 builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: reloadOnChange)
-    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: reloadOnChange);
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: reloadOnChange)
+    .AddEnvironmentVariables();
 
 // Serilog: structured logging to console + rolling file, configured from appsettings.
 Log.Logger = new LoggerConfiguration()
