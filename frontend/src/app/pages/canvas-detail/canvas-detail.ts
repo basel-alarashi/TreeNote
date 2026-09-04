@@ -12,7 +12,7 @@ import { HistoryService } from '../../services/canvas/history.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { OfflineStorageService } from '../../services/offline/offline-storage.service';
 import { ConnectivityService } from '../../services/offline/connectivity.service';
-// import { TopicItemComponent } from '../../features/topic/topic-item/topic-item';
+import { TopicItemComponent } from '../../features/topic/topic-item/topic-item';
 import { CanvasComponent } from '../../features/canvas/canvas/canvas';
 import { CanvasDetail } from '../../models/canvas/canvas.model';
 import { CreateTopicCommand, Topic } from '../../models/topic.model';
@@ -24,7 +24,7 @@ import { forkJoin, concatMap, from, toArray, finalize, Observable } from 'rxjs';
   selector: 'app-canvas-detail',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, MatButtonModule, MatFormFieldModule, MatInputModule/*, TopicItemComponent*/, CanvasComponent],
+  imports: [CommonModule, FormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, TopicItemComponent, CanvasComponent],
   templateUrl: './canvas-detail.html',
   styleUrl: './canvas-detail.scss',
 })

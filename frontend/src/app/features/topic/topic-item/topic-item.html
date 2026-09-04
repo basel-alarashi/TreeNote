@@ -4,9 +4,9 @@
   <button mat-icon-button (click)="confirmEdit()"><mat-icon>check</mat-icon></button>
   } @else {
   <span>{{ topic.emoji }} {{ topic.title }}</span>
-  <button mat-icon-button (click)="startEdit()"><mat-icon>edit</mat-icon></button>
-  <button mat-icon-button (click)="addChild.emit(topic.id)"><mat-icon>add</mat-icon></button>
-  <button mat-icon-button (click)="duplicate.emit(topic.id)"><mat-icon>content_copy</mat-icon></button>
-  <button mat-icon-button (click)="delete.emit(topic.id)"><mat-icon>delete</mat-icon></button>
+  <button mat-icon-button (click)="startEdit()" aria-label="Rename Topic"><mat-icon>edit</mat-icon></button>
+  <button mat-icon-button (click)="addChild.emit(topic.id)" aria-label="Add Child"><mat-icon>add</mat-icon></button>
+  <button mat-icon-button (click)="duplicate.emit(topic.id)" aria-label="Duplicate Topic"><mat-icon>content_copy</mat-icon></button>
+  <button mat-icon-button (click)="delete.emit(topic.id)" aria-label="Delete Topic"><mat-icon>delete</mat-icon></button>
   }
 </div>
