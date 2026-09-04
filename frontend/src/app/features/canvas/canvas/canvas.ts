@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, ElementRef, HostListener, inject, input, output, signal, viewChild, effect, computed } from '@angular/core';
+import { Component, OnDestroy, ChangeDetectionStrategy, ElementRef, HostListener, inject, input, output, signal, viewChild, effect, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -41,7 +41,7 @@ const FOCUS_PADDING = 200;
   templateUrl: './canvas.html',
   styleUrl: './canvas.scss',
 })
-export class CanvasComponent {
+export class CanvasComponent implements OnDestroy {
   readonly svgRef = viewChild<ElementRef<SVGSVGElement>>('canvasSvg');
   readonly name = input.required<string>();
   readonly topics = input.required<Topic[]>();
@@ -76,6 +76,9 @@ export class CanvasComponent {
   private touchMoved = false;
   private readonly TOUCH_DRAG_THRESHOLD = 10; // px before considering it a drag
   private readonly PINCH_THRESHOLD = 50; // ms to distinguish tap vs drag
+  private longPressTimer: ReturnType<typeof setTimeout> | null = null;
+  private longPressTriggered = false;
+  private readonly LONG_PRESS_DURATION = 500; // ms before showing context menu
 
   private readonly CULL_PADDING = 300; // canvas units of buffer around the visible area
 
@@ -277,11 +280,26 @@ export class CanvasComponent {
 
     this.touchStartTime = Date.now();
     this.touchMoved = false;
+    this.longPressTriggered = false;
     this.activeTouches.set(touch.identifier, { x: touch.clientX, y: touch.clientY });
 
-    // Don't start drag immediately - wait to distinguish from tap
-    setTimeout(() => {
+    // Start long-press timer for context menu
+    this.clearLongPressTimer();
+    this.longPressTimer = setTimeout(() => {
       if (!this.touchMoved && this.activeTouches.has(touch.identifier)) {
+        this.longPressTriggered = true;
+        this.showContextMenu(touch.clientX, touch.clientY, topic);
+
+        // Cancel any pending drag
+        this.isDragging = false;
+        this.draggingIds = [];
+        this.dragOrigin.clear();
+      }
+    }, this.LONG_PRESS_DURATION);
+
+    // Don't start drag immediately - wait to distinguish from tap/long-press
+    setTimeout(() => {
+      if (!this.touchMoved && !this.longPressTriggered && this.activeTouches.has(touch.identifier)) {
         this.startTopicDrag(touch.clientX, touch.clientY, topic, false);
       }
     }, this.PINCH_THRESHOLD);
@@ -300,7 +318,9 @@ export class CanvasComponent {
 
     if (Math.abs(dx) > this.TOUCH_DRAG_THRESHOLD || Math.abs(dy) > this.TOUCH_DRAG_THRESHOLD) {
       this.touchMoved = true;
-      if (!this.isDragging) {
+      this.clearLongPressTimer(); // Cancel long-press if movement detected
+
+      if (!this.isDragging && !this.longPressTriggered) {
         // Start drag if not already started
         const topicElement = event.target as Element;
         const topicId = this.getTopicIdFromElement(topicElement);
@@ -324,7 +344,14 @@ export class CanvasComponent {
     const touch = event.changedTouches[0];
     if (!touch) return;
 
+    this.clearLongPressTimer();
     this.activeTouches.delete(touch.identifier);
+
+    if (this.longPressTriggered) {
+      // Context menu was shown - don't process as selection/drag
+      this.longPressTriggered = false;
+      return;
+    }
 
     if (this.isDragging) {
       this.finishDrag();
@@ -713,4 +740,24 @@ export class CanvasComponent {
   }
 
   private pinchData: { distance: number; midpoint: { x: number; y: number } } | null = null;
+
+  private clearLongPressTimer(): void {
+    if (this.longPressTimer) {
+      clearTimeout(this.longPressTimer);
+      this.longPressTimer = null;
+    }
+  }
+
+  private showContextMenu(x: number, y: number, topic: Topic): void {
+    if (!this.selection.isSelected(topic.id)) {
+      this.selection.select(topic.id, false);
+    }
+    this.contextMenuTopicId.set(topic.id);
+    this.contextMenuPosition.set({ x, y });
+    setTimeout(() => this.menuTrigger().openMenu(), 100);
+  }
+
+  ngOnDestroy(): void {
+    this.clearLongPressTimer();
+  }
 }
