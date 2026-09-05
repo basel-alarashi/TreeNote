@@ -2,11 +2,13 @@
 
 > A modern visual knowledge management application for organizing ideas using interactive concept maps.
 
-![.NET](https://img.shields.io/badge/.NET-8-purple)
+![.NET](https://img.shields.io/badge/.NET-10-purple)
 ![Angular](https://img.shields.io/badge/Angular-21-red)
 ![SQL%20Server](https://img.shields.io/badge/SQL%20Server-2022-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Status](https://img.shields.io/badge/status-In%20Development-orange)
+
+**[Live Demo →](https://treenote-1.onrender.com)** *(hosted on a free tier — the backend sleeps after 15 minutes idle; the first request may take up to a minute to wake it)*
 
 ---
 
@@ -16,7 +18,7 @@ TreeNote is a full-stack web application that enables users to organize informat
 
 Instead of storing notes as plain text, TreeNote lets users build structured knowledge using connected topics, making brainstorming, planning, and learning more intuitive.
 
-This project is being developed as a portfolio-quality application following Agile practices and modern software engineering principles.
+This project is being developed as a portfolio-quality application following Agile/Scrum practices (7 sprints) and modern software engineering principles.
 
 ---
 
@@ -24,25 +26,24 @@ This project is being developed as a portfolio-quality application following Agi
 
 ### Version 1.0
 
-- 🔐 JWT Authentication
+
+- 🔐 JWT authentication with rotating, httpOnly-cookie-backed refresh tokens
 - 🔑 Google OAuth
 - 👤 User Profiles
-- 📂 Workspace Management
-- 🗺️ Canvas Management
+- 📂 Workspace and canvas management
 - 🌳 Tree-based Concept Maps
-- 🔗 Optional Multi-parent Relationships
-- 🖱️ Drag & Drop Editing
-- 🔍 Topic Search
+- 🖱️ Interactive SVG canvas: drag & drop, pan, zoom, viewport culling for large maps, undo/redo, touch support, full keyboard accessibility
+- 🔍 Debounced topic search with keyboard navigation
 - 📄 Export to PDF
 - 🖼️ Export to PNG
 - 📱 Responsive Design
-- 📶 Offline Support
+- 📶 Offline Support (editing with IndexedDB caching and background sync)
 
 ### Planned Features
 
 - 👥 Collaboration
 - 🤖 AI-assisted Mind Maps
-- 📝 Markdown
+- 📝 Markdown & rich text support
 - 🖼️ Images & Attachments
 - 🏷️ Tags
 - 🌙 Dark Theme
@@ -103,8 +104,14 @@ This project is being developed as a portfolio-quality application following Agi
 
 - Git
 - GitHub
+- Github Actions (CI)
 - Swagger
+- Docker
 - Visual Studio 2026
+
+---
+
+**Deployment topology:** Angular static build on Render Static Site → ASP.NET Core API in a Docker container on Render Web Service → SQL Server database hosted remotely. Frontend and backend share a registrable domain (`*.onrender.com`), which keeps the refresh-token cookie's `SameSite=Strict` policy working across both without relaxing it.
 
 ---
 
@@ -132,9 +139,9 @@ TreeNote/
 | Sprint 1 | Infrastructure & Application Foundation | ✅ Done |
 | Sprint 2 | Core Domain (Workspace, Canvas, Topics & Relationships) | ✅ Done |
 | Sprint 3 | Visual Canvas Editor | ✅ Done |
-| Sprint 4 | Authentication & User Management |  |
+| Sprint 4 | Authentication & User Management | ✅ Done |
 | Sprint 5 | Search, Export & Offline Support | ✅ Done |
-| Sprint 6 | Performance, Deployment & Final Polish | 🚧 In Progress |
+| Sprint 6 | Performance, Deployment & Final Polish | ✅ Done |
 
 ---
 
@@ -180,11 +187,11 @@ Each sprint includes:
 
 # 📈 Current Status
 
-**Current Version:** `v0.5.0`
+**Current Version:** `v1.0.0`
 
-**Current Sprint:** `Sprint 6`
+**Current Sprint:** `All 7 sprints are done`
 
-**Status:** 🚧 In Development — Authentication, Workspace, Canvas/Topic/Relationship CRUD, the visual editor, search, PNG/PDF export, and offline support with sync are all functional. Performance, deployment, and final polish remain.
+**Status:** 🚧 ✅ Done — Authentication, Workspace, Canvas/Topic/Relationship CRUD, the visual editor, search, PNG/PDF export, offline support with sync, Performance, deployment, and final polish.
 
 ---
 
@@ -195,6 +202,14 @@ Traditional note-taking applications are optimized for writing.
 TreeNote is optimized for **thinking**.
 
 It enables users to visualize relationships between ideas, making information easier to understand, organize, and remember.
+
+---
+
+## ⚠️ Known Limitations (free-tier hosting)
+
+- Backend cold-starts (~30–60s) after 15 minutes of inactivity.
+- Database storage capped well below the architecture's documented 10,000-topic design target — sufficient for demo use, not production scale.
+- No automated test suite yet (tracked for v1.1).
 
 ---
 
